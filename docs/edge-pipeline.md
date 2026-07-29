@@ -1,12 +1,12 @@
 # Edge Pipeline
 
-This document describes the on-device ML pipeline that runs on the phone.
+This document describes the browser-based analysis pipeline that runs in the user's web browser.
 
 ---
 
 ## What is the edge pipeline?
 
-The edge pipeline is the core of HerdSense. It takes a video recording from the phone camera, runs ML models to extract behavioral signals from the animals, and produces a stress score. Everything runs on the phone itself. No internet connection is needed.
+The edge pipeline is the core of HerdSense. It takes a video (from a preset or upload), runs a detection model in the browser to find animals, extracts behavioral signals, and produces a stress score. Everything runs in the browser using TypeScript and ONNX Runtime Web. No server needed.
 
 ---
 
@@ -14,26 +14,27 @@ The edge pipeline is the core of HerdSense. It takes a video recording from the 
 
 ### Stage 1: Video input
 
-Input: 20-40 second video at 30fps, 720p resolution.
+Input: Pre-recorded video file (demo preset or user upload) at 30fps, 720p resolution.
 
-The video is read frame by frame. Every 3rd frame is kept for processing (saves battery while keeping enough data for analysis).
+The video is loaded into an HTML5 video element. Frames are drawn to a canvas for processing. Every 3rd frame is kept for processing (saves battery while keeping enough data for analysis).
 
 ### Stage 2: Animal detection
 
-Model: YOLOv8-Nano converted to TensorFlow Lite (INT8 quantized, ~4MB).
+Model: YOLOv8-Nano exported to ONNX format, loaded through ONNX Runtime Web.
 
 For each sampled frame:
-- The model finds all animals in the frame
-- Returns bounding boxes with confidence scores
+- The canvas pixel data is converted to a tensor
+- ONNX Runtime Web runs the model
+- The model returns bounding boxes with confidence scores
 - Detections below 0.5 confidence are discarded
 
 ### Stage 3: Animal tracking
 
-Algorithm: ByteTrack.
+Algorithm: ByteTrack (simplified for browser).
 
 Links detections across frames so each animal keeps the same ID:
-- When animals walk past each other, the tracker keeps them separate
-- When animals leave and re-enter the frame, the tracker tries to re-assign their ID
+- Matches bounding boxes between consecutive frames using IoU (Intersection over Union)
+- Each animal gets a unique ID
 - Output: list of (frame_number, animal_id, bounding_box) for each detected animal
 
 ### Stage 4: Clustering measurement
@@ -46,12 +47,19 @@ For each frame where animals are detected, calculate:
 
 If animals are spread out, IASI is high (low stress signal). If animals are bunched, IASI is low (high stress signal).
 
-### Stage 5: Motion analysis
+### Stage 5: Motion analysis (centroid displacement)
 
-For each detected animal region across consecutive frames:
+Instead of running heavy optical flow (Farneback), we use a much simpler approach:
 
-- Compute Farneback optical flow
-- Extract: mean flow magnitude (speed), flow magnitude variance (gait irregularity), flow direction variance (erratic movement)
+For each tracked animal across consecutive frames:
+- Get centroid position in frame N: (x1, y1)
+- Get centroid position in frame N+1: (x2, y2)
+- Displacement vector: dx = x2 - x1, dy = y2 - y1
+- Speed: sqrt(dx^2 + dy^2)
+- Gait irregularity: variance of displacement magnitude over time
+- Direction change: angle between consecutive displacement vectors
+
+This gives the same information as optical flow (speed, gait jitter, erratic movement) but uses only 3 lines of math per animal per frame. No ML model needed, no GPU required, near-zero battery impact.
 
 Animals under stress tend to walk faster and more erratically.
 
@@ -65,20 +73,24 @@ Since full keypoint detection is not available for livestock, we use bounding-bo
 
 This is a coarse signal but works without a specialized keypoint model.
 
-### Stage 7: Audio analysis
+### Stage 7: Audio (input parameter)
 
-Input: Audio track extracted from the video (16kHz mono).
+Audio is not processed in the browser. Instead, it is a simple numeric input parameter:
 
-- Convert audio to Mel-spectrogram (128 Mel bands, 25ms window, 10ms hop)
-- Classify each segment into: normal_vocalization, distress_call, silence, noise
-- Calculate Vocalization Stress Ratio = distress_count / total_vocalizations
+```
+audioDistressRatio: number (0 to 1)
+```
 
-Note: For the initial demo, audio classifications are pre-labeled on the
-demo videos rather than running real-time audio ML.
+For the demo presets, this value is pre-set based on the scenario:
+- Healthy: 0.1
+- Early stress: 0.5
+- Critical: 0.8
+
+This avoids building a complex audio ML pipeline for hardcoded demo data.
 
 ### Stage 8: Fusion
 
-All measurements are normalized to 0-1 and combined:
+All measurements are normalized to 0-1 and combined in pure TypeScript:
 
 ```
 hssi = 100 * (
@@ -91,8 +103,8 @@ hssi = 100 * (
 
 ### Stage 9: Trend and output
 
-- Compare with last 5 scans stored in memory
-- Calculate trend direction (linear regression)
+- Compare with last 5 scans stored in localStorage
+- Calculate trend direction using linear regression
 - Map score + trend to action recommendation
 - Return final result
 
@@ -102,37 +114,21 @@ hssi = 100 * (
 
 | Metric | Target |
 |--------|--------|
-| Processing time per frame | Under 100ms |
+| Processing time per frame | Under 200ms in browser |
 | Total processing time for 30s video | Under 30 seconds |
-| Model size | Under 10MB total |
-| Battery usage per scan | Under 5% of battery |
-| RAM usage | Under 200MB |
+| Model size | Under 10MB (ONNX format) |
+| RAM usage | Under 300MB |
+| Model inference backend | ONNX Runtime Web (WebGL or WASM) |
 
 ---
 
-## Files in this folder
+## Files
 
 ```
-edge/
-├── models/              # Downloaded model files (TFLite, ONNX)
-│   ├── yolov8n.tflite
-│   └── yamnet.tflite
-├── scripts/
-│   ├── download_model.py    # Downloads and converts models
-│   └── process_video.py     # Main video processing script
-├── detection/
-│   ├── detector.py          # YOLOv8 inference wrapper
-│   ├── tracker.py           # ByteTrack implementation
-│   └── features.py          # Feature extraction (IASI, motion, posture)
-├── audio/
-│   ├── classifier.py        # Audio classification
-│   └── spectrogram.py       # Mel-spectrogram conversion
-├── fusion/
-│   ├── engine.py            # Fusion engine
-│   └── weights.py           # Weight configuration
-├── storage/
-│   └── local_db.py          # SQLite storage for scan history
-├── tests/                   # Unit tests
-├── requirements.txt
-└── main.py                  # Entry point
+src/pipeline/
+├── detector.ts       # ONNX Runtime Web YOLOv8 wrapper
+├── tracker.ts        # Centroid-based ByteTrack
+├── fusion.ts         # HSSI engine (pure math, ~20 lines)
+├── features.ts       # IASI + displacement + posture extraction
+└── types.ts          # Shared type definitions
 ```

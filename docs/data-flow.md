@@ -4,35 +4,30 @@ How data moves through the HerdSense system, from capture to final output.
 
 ---
 
-## 1. Video capture
+## 1. Video selection
 
-The user opens the app and taps the record button. The phone records:
+The user opens the web app and selects a demo preset (or uploads a video). The video is loaded into an HTML5 video element in the browser.
 
-- 20 to 40 seconds of video at 30 frames per second
-- Audio at 16kHz sample rate (mono)
-- GPS location (if available)
-- Time of day
-- Ambient light level (from camera sensor)
-
-**What gets saved on the phone:** The raw video stays on the phone. It is never uploaded anywhere.
+**What gets saved:** Nothing yet. The video is only in browser memory.
 
 ---
 
 ## 2. Frame extraction
 
-The video is processed in chunks:
+The video is processed frame by frame using Canvas API:
 
 - Every 3rd frame is extracted for analysis (10 frames per second)
 - This saves battery and processing time
-- Full 30fps would drain the battery too fast
+- Full 30fps would be too slow for browser inference
 
 ---
 
 ## 3. Animal detection
 
-Each extracted frame goes through YOLOv8-Nano running in TensorFlow Lite:
+Each extracted frame goes through YOLOv8-Nano running in ONNX Runtime Web:
 
-- The model finds all animals in the frame
+- Canvas pixel data is converted to a tensor
+- The model runs in the browser using WebGL or WASM
 - Returns bounding boxes (x, y, width, height) for each animal
 - Returns a confidence score for each detection
 
@@ -44,7 +39,7 @@ ByteTrack algorithm links detections across frames:
 
 - Each animal gets a unique ID
 - The system tracks where each animal moves
-- Handles animals walking behind each other (re-associates them when they reappear)
+- Handles animals walking behind each other
 
 ---
 
@@ -54,17 +49,22 @@ ByteTrack algorithm links detections across frames:
 
 For each frame, the system calculates:
 
-- Distance between every pair of animals (centroid to centroid)
+- Centroids: center point of each animal's bounding box
+- Pairwise distances: distance between every pair of centroids
 - Average distance across all pairs = Inter-Animal Spacing Index (IASI)
 - Lower IASI = more bunched = higher stress
 
 ### Motion (gait)
 
-Using optical flow on the detected animal regions:
+Using centroid displacement across frames:
 
-- Average movement speed
-- Speed variation (irregular walking = higher stress)
-- Direction change frequency
+- For each animal, track centroid position from frame N to N+1
+- Displacement vector: (dx, dy) = (x2 - x1, y2 - y1)
+- Average movement speed from displacement magnitude
+- Speed variation (gait irregularity) from displacement variance
+- Direction change frequency from angle between vectors
+
+This replaces Farneback optical flow. Same information, almost zero computation.
 
 ### Posture (head position)
 
@@ -76,17 +76,17 @@ Using bounding box shape changes:
 
 ### Audio
 
-Audio is analyzed separately:
+Audio is not analyzed in the browser. It is a preset value for each demo clip:
 
-- Converted to spectrogram (visual representation of sound frequencies)
-- Classified into: normal sounds, distress calls, silence, background noise
-- Ratio of distress calls to total sounds = Vocalization Stress Ratio
+- Healthy: audioDistressRatio = 0.1
+- Early stress: audioDistressRatio = 0.5
+- Critical: audioDistressRatio = 0.8
 
 ---
 
 ## 6. Fusion into stress score
 
-All four measurements are normalized to a 0-1 scale, then combined:
+All four measurements are normalized to a 0-1 scale, then combined in TypeScript:
 
 ```
 Clustering Score (35% weight)
@@ -100,22 +100,22 @@ The weights reflect how reliable each signal is:
 - Clustering is most reliable and works in almost all conditions
 - Motion is reliable but needs animals to be moving
 - Posture is a secondary signal (uses heuristics, not exact keypoints)
-- Audio is lowest because wind and noise can interfere
+- Audio is lowest because it is a preset value (for demo)
 
 ---
 
 ## 7. Trend calculation
 
-The system stores the last 5 scan results and calculates:
+The system stores the last 5 scan results in browser localStorage and calculates:
 
 - Simple linear regression over time
-- Output: `improving` (score dropping), `stable` (no change), `escalating` (score rising)
+- Output: improving (score dropping), stable (no change), escalating (score rising)
 
 ---
 
 ## 8. Local storage
 
-All results are saved in a SQLite database on the phone:
+All results are saved in browser localStorage:
 
 - Each scan: timestamp, score, sub-scores, animal count
 - Last 7 scans kept for trend display
@@ -127,29 +127,27 @@ All results are saved in a SQLite database on the phone:
 
 If the user taps "Share Anonymized":
 
-- Only these fields are sent: geo-hash, stress score, animal count, timestamp
+- Only these fields are sent: approximate lat/lng, stress score, animal count, timestamp
 - No video, no images, no audio, no personal information
-- Payload is under 1KB (can be sent over SMS)
-- Encrypted with AES-256-GCM
+- Payload is under 1KB
 
 ---
 
 ## 10. Backend aggregation (when shared data arrives)
 
 1. Report is received and validated
-2. Stored in H3 hexagonal grid cell
-3. DBSCAN clustering checks if 3+ herds in 15km radius report score above 60
-4. If yes, an alert is created
-5. Map layer updates with new data point
+2. Haversine distance formula checks if 3+ herds within 15km report score above 60
+3. If yes, an alert is created
+4. Map updates with new data point
 
 ---
 
 ## 11. Satellite comparison
 
-Periodically (for demonstration):
+For the demo:
 
-- System fetches Sentinel-2 NDVI for the region
-- Compares HerdSense alert date vs NDVI breach date
+- Pre-fetched Sentinel-2 NDVI data is loaded from a local file
+- System compares HerdSense alert date vs NDVI breach date
 - Calculates lead time in days
 - Displays on the timeline slider in the app
 
@@ -157,13 +155,12 @@ Periodically (for demonstration):
 
 ## Privacy summary
 
-| Data | Stays on phone? | Can be shared? |
-|------|----------------|----------------|
-| Raw video | Yes | Never |
-| Raw audio | Yes | Never |
-| Animal images | Yes | Never |
-| GPS coordinates | Yes | Only as rough geo-hash |
-| Stress score | Yes | If user allows |
+| Data | Stays on device? | Can be shared? |
+|------|-----------------|----------------|
+| Raw video | Never uploaded | Never shared |
+| Animal images | Never uploaded | Never shared |
+| GPS coordinates | Yes | Only as rough lat/lng |
+| Stress score | Yes (localStorage) | If user allows |
 | Timestamp | Yes | If user allows |
 | Animal count | Yes | If user allows |
 | Personal info | N/A | Never collected |

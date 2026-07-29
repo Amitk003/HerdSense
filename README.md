@@ -8,7 +8,7 @@ No satellites. No IoT collars. No hardware. Just a phone and the herd.
 
 ## What is HerdSense?
 
-HerdSense is a mobile application that turns your phone into an livestock stress detection tool. Point your phone at the herd, record 20 seconds of video, and get a clear stress score from 0 to 100. All processing happens on your phone. No internet required.
+HerdSense is a web application that turns your phone into a livestock stress detection tool. Point your phone at the herd, record 20 seconds of video, and get a clear stress score from 0 to 100. All processing happens in your browser. No internet required after the page loads.
 
 It measures things your animals are already telling you:
 - Are they bunching together more than normal?
@@ -32,7 +32,7 @@ Livestock change their behavior when forage quality drops or water becomes scarc
 The phone in your pocket is enough. No collars. No sensors. No installation.
 
 **Works offline.**
-Analysis runs entirely on your phone. No cell signal needed. No data plan needed.
+Analysis runs entirely in your browser. No cell signal needed. No data plan needed. Once the page loads, it works without any connection.
 
 **You control your data.**
 Nothing leaves your phone unless you choose to share an anonymous summary. No images. No video. Just a number and a rough location.
@@ -41,9 +41,9 @@ Nothing leaves your phone unless you choose to share an anonymous summary. No im
 
 ## How it works
 
-1. Open the app and point your phone at the herd
-2. Record 20 to 40 seconds of video
-3. The app analyzes the video on your phone using computer vision and audio models
+1. Open the web app on your phone
+2. Tap a demo preset or upload a video of your herd
+3. The app analyzes the video in your browser using computer vision
 4. You get a Herd Stress Score from 0 to 100 with a recommended action
 5. Optionally share an anonymous summary to help build a regional stress map
 
@@ -64,31 +64,31 @@ Nothing leaves your phone unless you choose to share an anonymous summary. No im
 
 | Component | Technology |
 |-----------|-----------|
-| Animal detection | YOLOv8-Nano -> TensorFlow Lite |
-| Object tracking | ByteTrack |
-| Motion analysis | OpenCV Farneback optical flow |
-| Fusion engine | Python (NumPy + SciPy) |
-| Audio classification | YAMNet (custom fine-tuned) |
-| Mobile app | React Native (Expo) |
-| Map visualization | Leaflet + H3 spatial indexing |
-| Backend API | Flask + SQLite |
-| Satellite comparison | Sentinel-2 NDVI (Copernicus) |
+| Animal detection | YOLOv8-Nano through ONNX Runtime Web |
+| Object tracking | ByteTrack (centroid-based) |
+| Motion analysis | Centroid displacement vectors (dx, dy) |
+| Fusion engine | TypeScript (pure math, no frameworks) |
+| Audio input | Simple numeric parameter (pre-labeled for demo) |
+| Web app | Vite + React + TypeScript |
+| Map visualization | Leaflet + Haversine clustering |
+| Backend API | Flask + SQLite (optional) |
+| Satellite comparison | Pre-fetched Sentinel-2 NDVI |
 
 ### Project structure
 
 ```
 herdsense0/
-├── edge/             # On-device ML pipeline source code
-├── backend/          # Backend aggregation server
+├── src/              # Web application source code
+├── public/           # Static assets and model files
+├── edge/             # Python dev tools (model conversion, testing)
+├── backend/          # Optional backend server
 ├── docs/             # Documentation
 ├── data/             # Sample data and model files
 └── README.md
 ```
 
-See `docs/setup-guide.md` to get started.
-
 ---
 
-## Status
+## Project status
 
 This project is under active development.

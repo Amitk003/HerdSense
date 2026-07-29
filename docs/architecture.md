@@ -8,72 +8,102 @@ This document describes how HerdSense is built and how the different parts conne
 
 HerdSense has two main parts:
 
-1. **Edge layer** - Runs on the user's phone. Does all the analysis locally.
+1. **Browser layer** - Runs in the user's phone browser. Does all the analysis locally using ONNX Runtime Web.
 2. **Backend layer** - Optional server that collects anonymous scores from many users to build a regional stress map.
 
 ---
 
-## Edge layer (mobile phone)
+## Browser layer
 
-The phone app does everything without needing the internet:
+The web app does everything without needing the internet (after the page loads):
 
 ```
-[Camera + Mic] -> [Capture 20-40 seconds]
-                        |
-            +-----------+-----------+
-            |                       |
-            v                       v
-    [Frame Sampler]         [Audio Extractor]
-            |                       |
-            v                       v
-    [YOLOv8-Nano]           [YAMNet Classifier]
-    - Animal boxes          - Distress calls
-    - Tracking              - Normal sounds
-    - Spacing index         - Silence detection
-            |                       |
-            +-----------+-----------+
-                        |
-                        v
-              [Fusion Engine]
-              Combines all signals
-                        |
-                        v
-              [Herd Stress Score 0-100]
-                        |
-              +---------+---------+
-              |                   |
-              v                   v
-      [Local Storage]     [Optional Share]
-      (SQLite)            (Anonymized JSON)
+[Video Upload / Preset]
+        |
+        v
+[Canvas Frame Extractor]
+   (every 3rd frame)
+        |
+        v
+[ONNX Runtime Web - YOLOv8]
+   - Animal bounding boxes
+   - Confidence scores
+        |
+        v
+[ByteTrack Tracker]
+   - Animal IDs across frames
+   - Centroid tracking
+        |
+        v
+[Feature Extraction]
+   - IASI (clustering)
+   - Centroid displacement (motion)
+   - Box aspect ratio (posture)
+        |
+        v
+[Fusion Engine]
+   Combines all signals
+        |
+        v
+[Herd Stress Score 0-100]
+        |
+    +---+---+
+    |       |
+    v       v
+[localStorage]  [Optional Share]
+(history)       (anonymous JSON)
 ```
 
 ### Components explained
 
-**Capture module**
-- Records 20-40 seconds of video at 30fps
-- Records audio at 16kHz sampling rate
-- Captures time of day and GPS location (if available)
+**Capture**
+- For the demo: user selects a pre-recorded preset video
+- Video is loaded into a hidden HTML5 video element
+- Frames are drawn to a canvas for processing
+
+**Frame extraction**
+- Every 3rd frame is extracted from the video (10 fps from 30fps source)
+- Canvas API captures pixel data from each frame
 
 **Animal detection**
-- Uses YOLOv8-Nano converted to TensorFlow Lite format
-- Detects animals in each video frame and draws bounding boxes around them
-- ByteTrack algorithm keeps track of each animal across frames
+- YOLOv8-Nano model runs through ONNX Runtime Web (in the browser)
+- Detects animals in each frame and returns bounding boxes
+- Detections below 0.5 confidence are discarded
+
+**Tracking**
+- ByteTrack algorithm links detections across frames
+- Each animal gets a unique ID
+- Tracks where each animal moves across frames
+
+**Clustering measurement**
+- Calculate centroid for each animal's bounding box
+- Compute distance between every pair of centroids
+- Average distance = Inter-Animal Spacing Index (IASI)
+- Lower IASI = more bunched = higher stress
 
 **Motion analysis**
-- Uses Farneback optical flow to measure movement patterns
-- Extracts: speed, walking irregularity, direction changes
+- Track centroid position of each animal across consecutive frames
+- Calculate displacement vectors (dx, dy)
+- Extract: speed, gait irregularity, direction change frequency
+- This replaces Farneback optical flow - same result, 0.01% of the computation
 
-**Audio analysis**
-- Converts audio to spectrograms (visual representation of sound)
-- Classifies sounds into: normal calls, distress calls, silence, noise
+**Posture analysis**
+- Track bounding box aspect ratio over time
+- Head raising/lowering changes the aspect ratio
+- Coarse signal but works without keypoint models
+
+**Audio**
+- Treated as a simple numeric input parameter (0 to 1)
+- For demo, this value is pre-set for each video preset
+- No audio ML pipeline in the browser
 
 **Fusion engine**
-- Takes all measurements and combines them into one score
-- Formula: HSSI = 100 x (0.35 x clustering + 0.25 x motion + 0.20 x posture + 0.20 x audio)
+- Pure TypeScript math, no external dependencies
+- HSSI = 100 x (0.35 x clustering + 0.25 x motion + 0.20 x posture + 0.20 x audio)
 - Each factor is normalized from 0 to 1 before combining
 
 **Local storage**
-- Saves every scan result in SQLite database
+- Saves scan results in browser localStorage
 - Keeps history for trend tracking
 - Calculates if stress is improving, stable, or getting worse
 
@@ -81,56 +111,76 @@ The phone app does everything without needing the internet:
 
 ## Backend layer
 
-The backend is optional. It only receives data when users choose to share.
+The backend is optional. It only receives data when users choose to share. For the demo, the backend is simulated with mock data.
 
 ```
-[Phone] -> [Anonymous Report] -> [Backend API]
+[Browser] -> [Anonymous Report] -> [Backend API]
                                        |
                                        v
-                              [H3 Spatial Index]
+                              [Simple Report Store]
                                        |
                                        v
-                              [DBSCAN Clustering]
+                              [Haversine Clustering]
                               (Alert if 3+ herds
-                               report high stress)
+                               within 15km report
+                               score above 60)
                                        |
-                          +------------+------------+
-                          |                         |
-                          v                         v
-                  [Regional Map]           [Satellite Overlay]
-                  (Stress heatmap)         (NDVI comparison)
+                              +--------+--------+
+                              |                 |
+                              v                 v
+                      [Regional Map]   [Satellite Overlay]
+                      (Stress markers)  (NDVI comparison)
 ```
 
 ### How aggregation works
 
-1. Each phone sends (only when user allows): geo-hash, stress score, animal count, timestamp
-2. Backend groups reports by location using H3 hexagons (about 1.2km wide)
-3. When 3 or more separate herds in a 15km radius all report score above 60, an alert triggers
-4. The map shows a heatmap of stress across the region
-5. Satellite NDVI data is shown alongside to compare detection speed
+1. Each browser sends (only when user allows): lat/lng, stress score, animal count, timestamp
+2. Backend stores reports
+3. Haversine distance formula checks: are there 3+ herds within 15km radius all reporting score above 60?
+4. If yes, an alert triggers
+5. The map shows markers colored by stress score
+6. Satellite NDVI data is shown alongside to compare detection speed
 
 ---
 
 ## Data flow (end to end)
 
 ```
-Phone capture
+Browser opens web app
     |
     v
-On-device ML analysis (TFLite)
+User selects demo preset
     |
     v
-Herd Stress Score calculated
+Video plays through HTML5 video element
     |
-    +---> Saved locally in SQLite
+    v
+Canvas extracts frames (every 3rd)
     |
-    +---> Optional: Anonymous JSON (< 1KB) sent to backend
+    v
+ONNX Runtime Web runs YOLOv8 on each frame
+    |
+    v
+Bounding boxes + tracking IDs
+    |
+    v
+Features extracted: IASI, displacement, aspect ratio
+    |
+    v
+Fusion engine calculates HSSI
+    |
+    v
+Results shown to user with score dial and recommendation
+    |
+    +---> Saved in localStorage for history
+    |
+    +---> Optional: Anonymous JSON sent to backend
                 |
                 v
-         Backend stores in H3 grid
+         Backend stores report
                 |
                 v
-         Clustering engine checks for alert conditions
+         Haversine clustering checks alert conditions
                 |
                 v
          Map updates with new data point
@@ -140,8 +190,10 @@ Herd Stress Score calculated
 
 ## Key design principles
 
-1. **Offline first** - Everything important works without internet
-2. **Privacy by default** - No data leaves the phone unless user chooses to share
-3. **Low bandwidth** - Shared reports are under 1KB (works on SMS/2G)
-4. **Simple UI** - Big numbers, clear colors, minimal text for outdoor use
-5. **No new hardware** - Works with any mid-range Android phone's camera and mic
+1. **Offline first**: Everything important works without internet after page load
+2. **Privacy by default**: No data leaves the browser unless user chooses to share
+3. **Low bandwidth**: Shared reports are under 1KB
+4. **Simple UI**: Big numbers, clear colors, minimal text for outdoor use
+5. **No new hardware**: Works with any phone's browser
+6. **No Python on client**: Everything runs in TypeScript/JavaScript in the browser
+7. **No heavy dependencies**: Centroid math replaces optical flow, Haversine replaces DBSCAN

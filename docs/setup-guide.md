@@ -6,12 +6,10 @@ How to get HerdSense running on your machine.
 
 ## Prerequisites
 
-- Python 3.10 or higher
 - Node.js 18 or higher
 - npm or yarn
 - Git
-- A phone or emulator (for mobile app)
-- OpenCV compatible camera (for testing capture)
+- A modern web browser (Chrome, Firefox, Edge, or mobile browser)
 
 ---
 
@@ -24,68 +22,39 @@ cd HerdSense
 
 ---
 
-## Setting up the edge pipeline
+## Setting up the web app
 
-The edge pipeline is the core ML system that analyzes videos.
-
-```
-cd edge
-python -m venv venv
-
-# On Windows:
-venv\Scripts\activate
-
-# On Mac/Linux:
-source venv/bin/activate
-
-pip install -r requirements.txt
-```
-
-### Requirements
-
-Create `edge/requirements.txt` with:
+The web app is the main application. It runs entirely in the browser.
 
 ```
-numpy>=1.24.0
-opencv-python>=4.8.0
-opencv-contrib-python>=4.8.0
-tensorflow>=2.13.0
-ultralytics>=8.0.0
-onnxruntime>=1.15.0
-librosa>=0.10.0
-scipy>=1.11.0
-matplotlib>=3.7.0
-flask>=3.0.0
-flask-cors>=4.0.0
-gunicorn>=21.2.0
-```
-
-### Download the model
-
-```
-python scripts/download_model.py
-```
-
-This downloads YOLOv8-Nano and converts it to TFLite format.
-
----
-
-## Setting up the mobile app
-
-```
-cd mobile
 npm install
 ```
 
-For iOS (if developing on Mac):
+---
+
+## Running the development server
 
 ```
-cd ios && pod install && cd ..
+npm run dev
 ```
+
+This starts the Vite development server. Open the URL shown in the terminal (usually http://localhost:5173) in your browser.
 
 ---
 
-## Setting up the backend
+## Building for production
+
+```
+npm run build
+```
+
+This creates a `dist/` folder with the production build. You can serve it with any static file server.
+
+---
+
+## Running the backend (optional)
+
+The backend is only needed for live data aggregation. It is optional.
 
 ```
 cd backend
@@ -98,83 +67,69 @@ venv\Scripts\activate
 source venv/bin/activate
 
 pip install -r requirements.txt
-```
-
----
-
-## Running locally
-
-### Run the edge pipeline
-
-```
-cd edge
-python main.py --input path/to/video.mp4
-```
-
-### Run the backend server
-
-```
-cd backend
 python app.py
 ```
 
 The server starts at `http://localhost:5000`.
 
-### Run the mobile app
+---
+
+## Running the Python dev tools (optional)
+
+The edge/ folder contains Python scripts for model conversion and testing. These are developer tools, not part of the running application.
 
 ```
-cd mobile
-npx expo start
+cd edge
+python -m venv venv
+
+# On Windows:
+venv\Scripts\activate
+
+# On Mac/Linux:
+source venv/bin/activate
+
+pip install -r requirements.txt
 ```
 
-Scan the QR code with Expo Go on your phone, or press `a` for Android emulator.
+### Download and convert the model
+
+```
+python scripts/download_model.py
+```
+
+This downloads YOLOv8-Nano and converts it to ONNX format for browser use.
 
 ---
 
 ## Running with sample data
 
-Download sample videos from the data folder:
-
-```
-cd data
-python download_samples.py
-```
-
-Then run the pipeline:
-
-```
-cd edge
-python main.py --input ../data/samples/healthy_herd.mp4
-python main.py --input ../data/samples/stressed_herd.mp4
-```
+Place demo videos in the `public/videos/` folder. The app will pick them up as demo presets.
 
 ---
 
 ## Testing
 
 ```
-cd edge
-python -m pytest tests/
+# Web app tests
+npm run test
 
+# Backend tests (if running)
 cd backend
 python -m pytest tests/
-
-cd mobile
-npx jest
 ```
 
 ---
 
 ## Common issues
 
-**OpenCV not working:**
-Make sure you have Visual C++ redistributable installed on Windows.
+**ONNX Runtime Web fails to load:**
+Make sure you are using a modern browser that supports WebGL. Chrome and Edge work best.
 
-**TFLite model not found:**
-Run `python scripts/download_model.py` first.
+**Model not found:**
+Run `npm run download-model` or place the YOLOv8 ONNX model in `public/models/`.
 
-**Camera not working on emulator:**
-Use a real phone for testing camera features.
+**App not working on phone:**
+Open the development server URL on your phone (same WiFi network). For production, use the build output with a static server.
 
-**Expo build failing:**
-Clear cache: `npx expo start -c`
+**Video not playing:**
+Make sure video files are in a supported format (MP4 with H.264 codec). Place them in `public/videos/`.

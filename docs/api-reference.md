@@ -41,7 +41,8 @@ Submit a stress reading from a phone. This is the main ingestion endpoint.
 Request body:
 ```json
 {
-    "geo_hash": "h3_hex_id_here",
+    "lat": 3.52,
+    "lng": 38.48,
     "stress_score": 72,
     "animal_count": 15,
     "species": "cattle",
@@ -50,11 +51,12 @@ Request body:
 ```
 
 Fields:
-- `geo_hash` (required): H3 hexagon id at resolution 6. About 1.2km precision.
-- `stress_score` (required): Integer from 0 to 100.
-- `animal_count` (optional): Number of animals detected.
-- `species` (optional): Type of livestock (cattle, goat, sheep, camel).
-- `timestamp` (required): ISO 8601 timestamp.
+- `lat` (required): Latitude of the report location
+- `lng` (required): Longitude of the report location
+- `stress_score` (required): Integer from 0 to 100
+- `animal_count` (optional): Number of animals detected
+- `species` (optional): Type of livestock (cattle, goat, sheep, camel)
+- `timestamp` (required): ISO 8601 timestamp
 
 Response:
 ```json
@@ -88,20 +90,22 @@ Response:
     "radius_km": 50,
     "report_count": 12,
     "average_score": 58,
-    "hexagons": [
+    "markers": [
         {
-            "id": "h3_hex_id",
-            "avg_score": 72,
-            "report_count": 3,
             "lat": 3.52,
-            "lng": 38.48
+            "lng": 38.48,
+            "score": 72,
+            "animal_count": 15,
+            "species": "cattle",
+            "timestamp": "2026-07-29T14:30:00Z"
         }
     ],
     "alerts": [
         {
-            "region": "hex_id",
+            "center": {"lat": 3.5, "lng": 38.5},
             "avg_score": 74,
             "herd_count": 4,
+            "radius_km": 15,
             "triggered_at": "2026-07-29T12:00:00Z"
         }
     ]

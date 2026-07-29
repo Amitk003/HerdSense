@@ -1,26 +1,25 @@
 # User Guide
 
-How to use the HerdSense app.
+How to use the HerdSense web app.
 
 ---
 
 ## Getting started
 
-1. Install the HerdSense app on your Android phone
-2. Open the app
-3. You will see the home screen with three demo buttons and a record button
+1. Open the HerdSense web app on your phone or computer
+2. You will see the home screen with three demo buttons
+3. The app works without internet after the page loads
 
 ---
 
 ## Taking a stress reading
 
-1. Tap the "Record New" button
-2. Point your phone camera at the herd
-3. Make sure the animals are visible and not too far away
-4. Hold the phone steady for 20 seconds
-5. The app will show a countdown timer
-6. When the timer finishes, the app processes the video on your phone
-7. After a few seconds, you will see the stress score
+1. Tap one of the demo preset buttons on the home screen:
+   - "Healthy Herd (Score ~22)"
+   - "Early Stress (Score ~58)"
+   - "Critical Distress (Score ~84)"
+2. The app plays the video and processes it in your browser
+3. After a few seconds, you will see the stress score
 
 ---
 
@@ -58,7 +57,7 @@ To share:
 1. After a reading, tap the "Share Anonymized" button
 2. The app sends only: an approximate location (not exact), the stress score, number of animals, and the time
 3. No video, no audio, no images, and no personal information is sent
-4. You can stop sharing at any time in the settings
+4. You can stop sharing at any time
 
 When you and other herders share data, a regional stress map becomes available showing conditions across a wider area.
 
@@ -67,17 +66,18 @@ When you and other herders share data, a regional stress map becomes available s
 ## Viewing the regional map
 
 1. Tap "View Regional Map" on the home screen
-2. The map shows hexagons colored by stress level
-3. Green hexagons mean low stress across those herds
-4. Red hexagons mean high stress
-5. Tap a hexagon to see details: how many herds reported, average score
+2. The map shows markers colored by stress level
+3. Green markers mean low stress across those herds
+4. Red markers mean high stress
+5. Click a marker to see details: score, number of animals, time
 6. Use the timeline slider at the bottom to see how stress changed over recent days
+7. Toggle the NDVI overlay to compare with satellite data
 
 ---
 
 ## Viewing your history
 
-1. After a reading, tap "View History"
+1. Tap "View History" on the home screen
 2. You will see a list of your past readings with scores and dates
 3. A sparkline chart shows the trend over time
 
@@ -85,34 +85,34 @@ When you and other herders share data, a regional stress map becomes available s
 
 ## Tips for good readings
 
-- Hold the phone steady. Shaky video makes detection harder.
-- Make sure animals are clearly visible. Do not record from too far away.
+- Use the demo presets for the best experience
+- If uploading your own video, make sure animals are clearly visible
 - Try to get most of the herd in the frame. At least 5 animals gives better results.
-- Record in good light when possible. The detection works in low light but is more accurate in daylight.
-- Take readings at the same time of day for consistent comparisons.
+- Take readings at the same time of day for consistent comparisons
+- Hold the phone steady when recording
 
 ---
 
 ## Privacy
 
-- Your videos never leave your phone
-- Your exact location never leaves your phone
+- Your videos never leave your browser
+- Your exact location never leaves your browser
 - Shared data is anonymous (rough location only, no personal info)
 - You control sharing at all times
-- You can delete all your data from the app at any time
+- You can clear all your data from the app settings at any time
 
 ---
 
 ## Troubleshooting
 
 **The score seems wrong:**
-Make sure animals are clearly visible. Try recording again from a different angle.
+Make sure animals are clearly visible in the video. Try a different demo preset.
 
 **The app is slow:**
-Close other apps. The processing takes a few seconds on older phones.
+Close other browser tabs. The processing takes a few seconds on older phones.
 
 **The map shows no data:**
-The map only shows data when people in your area have chosen to share their readings.
+The map uses sample data for demonstration. In production, it would show data from people who chose to share.
 
-**The camera is not working:**
-Make sure you have given the app camera permission in your phone settings.
+**The video does not play:**
+Make sure your browser supports MP4 video. Try Chrome or Edge.
