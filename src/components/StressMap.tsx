@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { MapContainer, TileLayer, Circle, CircleMarker, Tooltip, GeoJSON } from 'react-leaflet'
-import { getReportsUpToDay, getClusters, getNdviAtDay, getBreachDay, NDVI_READINGS } from '../data/mock-reports'
+import { getReportsUpToDay, getClusters, getNdviAtDay, NDVI_READINGS } from '../data/mock-reports'
 import { getNdviTimeline } from '../data/mock-ndvi'
 
 function scoreColor(score: number): string {
@@ -13,7 +13,11 @@ function scoreOpacity(score: number): number {
   return 0.4 + (score / 100) * 0.6
 }
 
-export default function StressMap() {
+interface StressMapProps {
+  onBack?: () => void
+}
+
+export default function StressMap({ onBack }: StressMapProps) {
   const [day, setDay] = useState(14)
   const [showNdvi, setShowNdvi] = useState(false)
 
@@ -22,18 +26,17 @@ export default function StressMap() {
   const reports = useMemo(() => getReportsUpToDay(day), [day])
   const clusters = useMemo(() => getClusters(day), [day])
   const currentNdvi = useMemo(() => getNdviAtDay(day), [day])
-  const breachDay = useMemo(() => getBreachDay(), [])
 
   const center: [number, number] = [3.52, 38.48]
   const herdSenseAlertDay = timeline.alertDay
   const showAlert = day >= herdSenseAlertDay
-  const showBreach = day >= breachDay
 
   const highStressCount = reports.filter(r => r.score > 60).length
 
   return (
     <div className="app">
       <header style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        {onBack && <button className="back-btn" onClick={onBack}>&#8592; Back</button>}
         <h1 className="section-title" style={{ margin: 0 }}>Regional Stress Map</h1>
       </header>
 
@@ -156,7 +159,7 @@ export default function StressMap() {
           <span style={{ color: showAlert ? 'var(--green)' : undefined }}>
             HerdSense alert
           </span>
-          <span style={{ color: showBreach ? 'var(--red)' : undefined }}>
+          <span style={{ color: 'var(--text-dim)' }}>
             NDVI breach
           </span>
         </div>
