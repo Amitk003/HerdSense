@@ -1,6 +1,44 @@
 import type { BoundingBox, DetectionFrame } from './types'
 import { CONFIDENCE_THRESHOLD, FRAME_SAMPLE_RATE, FPS } from '../constants'
 
+function calculateIoU(boxA: BoundingBox, boxB: BoundingBox): number {
+  const x1 = Math.max(boxA.x, boxB.x)
+  const y1 = Math.max(boxA.y, boxB.y)
+  const x2 = Math.min(boxA.x + boxA.width, boxB.x + boxB.width)
+  const y2 = Math.min(boxA.y + boxA.height, boxB.y + boxB.height)
+
+  const interWidth = Math.max(0, x2 - x1)
+  const interHeight = Math.max(0, y2 - y1)
+  const interArea = interWidth * interHeight
+
+  const areaA = boxA.width * boxA.height
+  const areaB = boxB.width * boxB.height
+  const unionArea = areaA + areaB - interArea
+
+  return unionArea <= 0 ? 0 : interArea / unionArea
+}
+
+function applyNMS(boxes: BoundingBox[], iouThreshold = 0.45): BoundingBox[] {
+  boxes.sort((a, b) => b.confidence - a.confidence)
+  const selected: BoundingBox[] = []
+
+  for (const box of boxes) {
+    let keep = true
+    for (const sel of selected) {
+      if (box.classId === sel.classId) {
+        if (calculateIoU(box, sel) > iouThreshold) {
+          keep = false
+          break
+        }
+      }
+    }
+    if (keep) {
+      selected.push(box)
+    }
+  }
+  return selected
+}
+
 export class Detector {
   private session: any = null
   private modelLoaded = false
@@ -10,9 +48,16 @@ export class Detector {
     try {
       const ort = await import('onnxruntime-web')
       ort.env.wasm.wasmPaths = '/wasm/'
-      this.session = await ort.InferenceSession.create(modelPath, {
-        executionProviders: ['webgl', 'wasm']
-      })
+      ort.env.wasm.numThreads = 1
+      try {
+        this.session = await ort.InferenceSession.create(modelPath, {
+          executionProviders: ['webgl', 'wasm']
+        })
+      } catch {
+        this.session = await ort.InferenceSession.create(modelPath, {
+          executionProviders: ['wasm']
+        })
+      }
       this.modelLoaded = true
       this.modelError = ''
     } catch (err) {
@@ -144,7 +189,7 @@ export class Detector {
             })
           }
         }
-        return boxes
+        return applyNMS(boxes, 0.45)
       }
 
       // [1, N, C] e.g. [1, 8400, 84]
@@ -199,7 +244,7 @@ export class Detector {
             })
           }
         }
-        return boxes
+        return applyNMS(boxes, 0.45)
       }
     }
 
@@ -232,8 +277,9 @@ export class Detector {
       }
     }
 
-    console.log('[HerdSense] parseOutput found', boxes.length, 'animal detections')
-    return boxes
+    const nmsBoxes = applyNMS(boxes, 0.45)
+    console.log('[HerdSense] parseOutput found', nmsBoxes.length, 'raw detections after NMS')
+    return nmsBoxes
   }
 
   private waitForSeek(video: HTMLVideoElement, targetTime: number): Promise<void> {
