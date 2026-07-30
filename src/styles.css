@@ -1049,6 +1049,150 @@ button:focus-visible {
   font-size: 14px;
 }
 
+.nearby-feed {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 800;
+  background: var(--earth-light);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  max-height: 50vh;
+  display: flex;
+  flex-direction: column;
+  transition: max-height 0.3s ease;
+}
+
+.nearby-feed.expanded {
+  max-height: 60vh;
+}
+
+.feed-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.feed-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.feed-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 15px;
+  font-weight: 400;
+}
+
+.feed-summary {
+  font-size: 12px;
+  color: var(--sand);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.feed-high-badge {
+  background: var(--dust-deep);
+  color: var(--dust);
+  padding: 1px 6px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.feed-toggle {
+  font-size: 12px;
+  color: var(--sand);
+  font-weight: 500;
+}
+
+.feed-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 16px 8px;
+}
+
+.feed-filters {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.feed-filter-btn {
+  padding: 4px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  color: var(--sand);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.feed-filter-btn.active {
+  background: var(--grass-deep);
+  color: var(--grass);
+  border-color: var(--grass);
+}
+
+.feed-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.feed-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.feed-item:hover {
+  background: var(--earth-lighter);
+}
+
+.feed-score-badge {
+  width: 36px;
+  height: 24px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.feed-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.feed-item-species {
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.feed-item-meta {
+  font-size: 11px;
+  color: var(--sand);
+}
+
 .error-screen {
   display: flex;
   flex-direction: column;
