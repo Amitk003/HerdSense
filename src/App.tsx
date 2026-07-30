@@ -41,28 +41,26 @@ export default function App() {
   const handleAnalysisComplete = useCallback((r: HerdStressResult) => {
     setResult(r)
     setScreen('analysis')
-  }, [])
+
+    const loc = peer.location || { lat: 1.35, lng: 36.82 }
+    reportCounter++
+    const report: StressReport = {
+      id: `r-${Date.now()}-${reportCounter}`,
+      lat: loc.lat,
+      lng: loc.lng,
+      score: r.score,
+      animalCount: r.animalCount,
+      species: r.species,
+      timestamp: r.timestamp
+    }
+    peer.broadcast(report)
+    showToast('Scan result automatically shared with nearby users')
+  }, [peer.location, peer.broadcast, showToast])
 
   const handleBackHome = useCallback(() => {
     setResult(null)
     setScreen('home')
   }, [])
-
-  const handleShare = useCallback(() => {
-    if (!result || !peer.location) return
-    reportCounter++
-    const report: StressReport = {
-      id: `r-${Date.now()}-${reportCounter}`,
-      lat: peer.location.lat,
-      lng: peer.location.lng,
-      score: result.score,
-      animalCount: result.animalCount,
-      species: result.species,
-      timestamp: result.timestamp
-    }
-    peer.broadcast(report)
-    showToast('Report shared with nearby users')
-  }, [result, peer.location, peer.broadcast, showToast])
 
   const handleClusterAlert = useCallback((cluster: AlertCluster) => {
     showToast(
@@ -152,7 +150,6 @@ export default function App() {
         <AnalysisView
           result={result}
           onBack={handleBackHome}
-          onShare={handleShare}
           onViewHistory={() => setScreen('history')}
           onViewMap={() => setScreen('map')}
         />

@@ -31,15 +31,6 @@ function MapController({ focusedReportId, reports, onClusterAlert }: MapControll
     return () => clearTimeout(timeout)
   }, [map])
 
-  if (tileError) {
-    return (
-      <div className="map-tile-overlay">
-        <span>Map tiles unavailable offline.</span>
-        <span className="map-tile-overlay-sub">Report markers still show.</span>
-      </div>
-    )
-  }
-
   useEffect(() => {
     if (!focusedReportId) return
     const report = reports.find(r => r.id === focusedReportId)
@@ -58,6 +49,15 @@ function MapController({ focusedReportId, reports, onClusterAlert }: MapControll
       }
     }
   }, [reports, onClusterAlert])
+
+  if (tileError) {
+    return (
+      <div className="map-tile-overlay">
+        <span>Map tiles unavailable offline.</span>
+        <span className="map-tile-overlay-sub">Report markers still show.</span>
+      </div>
+    )
+  }
 
   return null
 }

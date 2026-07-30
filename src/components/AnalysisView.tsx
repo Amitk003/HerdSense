@@ -5,7 +5,6 @@ import { SCORE_LOW, SCORE_HIGH } from '../constants'
 interface AnalysisViewProps {
   result: HerdStressResult
   onBack: () => void
-  onShare: () => void
   onViewHistory: () => void
   onViewMap: () => void
 }
@@ -47,7 +46,7 @@ const SUB_SCORES: { key: keyof HerdStressResult; label: string }[] = [
   { key: 'audio', label: 'Audio' }
 ]
 
-export default function AnalysisView({ result, onBack, onShare, onViewHistory, onViewMap }: AnalysisViewProps) {
+export default function AnalysisView({ result, onBack, onViewHistory, onViewMap }: AnalysisViewProps) {
   return (
     <div className="screen analysis-screen">
       <div className="card">
@@ -62,6 +61,9 @@ export default function AnalysisView({ result, onBack, onShare, onViewHistory, o
             <span className="analysis-hero-meta-item">
               <span className="analysis-hero-meta-dot" style={{ background: 'var(--text-muted)' }} />
               {result.animalCount} animals
+            </span>
+            <span className="analysis-hero-meta-item" style={{ background: 'rgba(34, 197, 94, 0.1)', color: 'var(--success)', padding: '2px 8px', borderRadius: 12, fontSize: 11, fontWeight: 600 }}>
+              Auto-shared with nearby peers
             </span>
           </div>
           <div className="analysis-trend"><TrendDisplay trend={result.trend} /></div>
@@ -92,13 +94,6 @@ export default function AnalysisView({ result, onBack, onShare, onViewHistory, o
       </div>
 
       <div className="analysis-actions">
-        <button className="share-btn" onClick={onShare}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
-            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-          </svg>
-          Share
-        </button>
         <button className="action-btn" onClick={onViewMap}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ verticalAlign: 'middle', marginRight: 4 }}>
             <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" />
