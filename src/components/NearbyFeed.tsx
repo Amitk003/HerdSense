@@ -44,6 +44,7 @@ export default function NearbyFeed({ reports, location, onSelect }: NearbyFeedPr
 
   return (
     <div className={`nearby-feed ${expanded ? 'expanded' : ''}`}>
+      <div className="feed-handle" />
       <div className="feed-header" onClick={() => setExpanded(!expanded)}>
         <div className="feed-header-left">
           <span className="feed-title">Nearby</span>
@@ -79,13 +80,15 @@ export default function NearbyFeed({ reports, location, onSelect }: NearbyFeedPr
               const dist = location
                 ? Math.round(haversineKm(location.lat, location.lng, r.lat, r.lng) * 10) / 10
                 : null
+              const isHigh = r.score > 60
 
               return (
                 <div
                   key={r.id}
-                  className="feed-item"
+                  className={`feed-item${isHigh ? ' feed-item-high' : ''}`}
                   onClick={() => onSelect(r)}
                 >
+                  {isHigh && <div className="feed-item-accent" />}
                   <span
                     className="feed-score-badge"
                     style={{ background: scoreColor(r.score) }}
@@ -98,7 +101,7 @@ export default function NearbyFeed({ reports, location, onSelect }: NearbyFeedPr
                     </span>
                     <span className="feed-item-meta">
                       {dist !== null ? `${dist}km away` : ''}
-                      {dist !== null ? ' · ' : ''}
+                      {dist !== null ? ' \u00b7 ' : ''}
                       {timeAgo(r.timestamp)}
                     </span>
                   </div>

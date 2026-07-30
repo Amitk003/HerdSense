@@ -65,10 +65,20 @@ export default function HomeScreen({ onPresetSelected, onNavigateCamera, onNavig
         <div className="last-scan-card" onClick={onNavigateHistory}>
           <span className="last-scan-label">Last scan</span>
           <div className="last-scan-score">
-            <ScoreDial score={lastScore} size={48} />
+            <ScoreDial score={lastScore} size={40} />
           </div>
         </div>
       )}
+
+      <div className="home-cta">
+        <button className="record-btn-big" onClick={onNavigateCamera}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+            <circle cx="12" cy="13" r="4" />
+          </svg>
+          Record New
+        </button>
+      </div>
 
       <section className="presets-section">
         <h2 className="section-title">Demo presets</h2>
@@ -79,18 +89,17 @@ export default function HomeScreen({ onPresetSelected, onNavigateCamera, onNavig
               className={`preset-card preset-${preset.id}`}
               onClick={() => handlePreset(preset)}
             >
-              <span className="preset-label">{preset.label}</span>
-              <ScoreDial score={preset.precomputedScore} size={64} />
-              <span className="preset-desc">{preset.description}</span>
+              <ScoreDial score={preset.precomputedScore} size={56} />
+              <div className="preset-info">
+                <span className="preset-label">{preset.label}</span>
+                <span className="preset-desc">{preset.description}</span>
+              </div>
             </button>
           ))}
         </div>
       </section>
 
       <nav className="home-nav">
-        <button className="nav-btn nav-btn-primary" onClick={onNavigateCamera}>
-          Record New
-        </button>
         <button className="nav-btn" onClick={onNavigateMap}>
           View Regional Map
         </button>

@@ -33,14 +33,9 @@ function MapController({ focusedReportId, reports, onClusterAlert }: MapControll
 
   if (tileError) {
     return (
-      <div style={{
-        position: 'absolute', inset: 0, display: 'flex',
-        alignItems: 'center', justifyContent: 'center',
-        background: '#2d241e', zIndex: 500,
-        color: '#a8a29e', fontSize: 14, flexDirection: 'column', gap: 8
-      }}>
+      <div className="map-tile-overlay">
         <span>Map tiles unavailable offline.</span>
-        <span style={{ fontSize: 12 }}>Report markers still show.</span>
+        <span className="map-tile-overlay-sub">Report markers still show.</span>
       </div>
     )
   }
@@ -102,12 +97,7 @@ export default function StressMap({ onBack, reports = [], focusedReportId, onClu
             onClusterAlert={onClusterAlert}
           />
           {!tilesLoaded && (
-            <div style={{
-              position: 'absolute', inset: 0, display: 'flex',
-              alignItems: 'center', justifyContent: 'center',
-              background: '#2d241e', zIndex: 500,
-              color: '#a8a29e', fontSize: 14
-            }}>
+            <div className="map-tile-overlay">
               Loading map tiles...
             </div>
           )}
@@ -178,8 +168,13 @@ export default function StressMap({ onBack, reports = [], focusedReportId, onClu
       </div>
 
       {reports.length === 0 && (
-        <div className="empty-state" style={{ textAlign: 'center', padding: '24px 16px', color: '#a8a29e' }}>
-          <p>No reports yet. Start a scan or connect to nearby users.</p>
+        <div className="empty-state">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--sand)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+            <circle cx="12" cy="10" r="3" />
+          </svg>
+          <p>No reports yet</p>
+          <span className="empty-state-sub">Start a scan or connect to nearby users</span>
         </div>
       )}
 
@@ -207,13 +202,10 @@ export default function StressMap({ onBack, reports = [], focusedReportId, onClu
           <h3>Herd reports ({reports.length})</h3>
           <div className="alert-cards">
             {reports.slice(0, 20).map(r => (
-              <div key={r.id} className="alert-card" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{
-                  width: 10, height: 10, borderRadius: '50%',
-                  background: scoreColor(r.score), display: 'inline-block', flexShrink: 0
-                }} />
-                <span style={{ fontWeight: 600 }}>Score {r.score}</span>
-                <span style={{ color: '#a8a29e', fontSize: 13 }}>{r.species} x{r.animalCount}</span>
+              <div key={r.id} className="alert-card alert-report-item">
+                <span className="alert-report-dot" style={{ background: scoreColor(r.score) }} />
+                <span className="alert-report-score">Score {r.score}</span>
+                <span className="alert-report-meta">{r.species} x{r.animalCount}</span>
               </div>
             ))}
           </div>

@@ -240,8 +240,13 @@ export default function CameraView({ onComplete, onBack }: CameraViewProps) {
       {useFileUpload ? (
         <div className="camera-body">
           <div className="upload-area">
-            <p>Camera not available on this device.</p>
-            <p style={{ color: '#a8a29e', fontSize: 13, marginTop: 8 }}>
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--sand)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="17 8 12 3 7 8" />
+              <line x1="12" y1="3" x2="12" y2="15" />
+            </svg>
+            <p style={{ color: 'var(--cream)', fontSize: 15, fontWeight: 600 }}>Camera unavailable</p>
+            <p style={{ color: 'var(--sand)', fontSize: 13, marginTop: 4 }}>
               Upload a video file of your herd instead.
             </p>
             <label className="upload-btn">
@@ -276,6 +281,12 @@ export default function CameraView({ onComplete, onBack }: CameraViewProps) {
                 <div className="recording-indicator">
                   <span className="recording-dot" />
                   Recording... {countdown}s
+                </div>
+                <div className="recording-progress">
+                  <div
+                    className="recording-progress-fill"
+                    style={{ width: `${((RECORD_DURATION - countdown) / RECORD_DURATION) * 100}%` }}
+                  />
                 </div>
               </div>
             )}
