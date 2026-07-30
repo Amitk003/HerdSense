@@ -16,6 +16,7 @@ Thumbs.db
 *.h5
 *.pkl
 *.onnx
+!public/models/yolov8n.onnx
 *.tflite
 *.pt
 *.pth

@@ -6,6 +6,7 @@ import { MAX_CACHED_REPORTS } from '../constants'
 const PEER_HOST = '0.peerjs.com'
 const PEER_PORT = 443
 const PEER_PATH = '/'
+const DEFAULT_LOCATION = { lat: 1.35, lng: 36.82 }
 
 export interface PeerState {
   status: 'connecting' | 'connected' | 'error'
@@ -26,7 +27,7 @@ function getInitialLocation(): Promise<{ lat: number; lng: number } | null> {
     navigator.geolocation.getCurrentPosition(
       pos => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
       () => resolve(null),
-      { timeout: 5000, maximumAge: 300000 }
+      { timeout: 10000, maximumAge: 300000 }
     )
   })
 }
@@ -49,6 +50,20 @@ export function usePeerNetwork(geoHashOverride?: string): PeerState {
     reportsRef.current = reports
   }, [reports])
 
+  // Watch GPS location updates seamlessly in background
+  useEffect(() => {
+    if (!navigator.geolocation) return
+    const watchId = navigator.geolocation.watchPosition(
+      pos => {
+        const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude }
+        setLocation(loc)
+      },
+      err => console.warn('Geolocation watch notice:', err.message),
+      { timeout: 15000, maximumAge: 60000 }
+    )
+    return () => navigator.geolocation.clearWatch(watchId)
+  }, [])
+
   const addReport = useCallback((report: StressReport) => {
     setReports(prev => {
       const ids = new Set(prev.map(r => r.id))
@@ -65,16 +80,11 @@ export function usePeerNetwork(geoHashOverride?: string): PeerState {
       let gh = geoHashOverride || null
       if (!gh) {
         const loc = await getInitialLocation()
-        if (loc) {
-          const { encodeGeoHash } = await import('../utils/geohash')
-          gh = encodeGeoHash(loc.lat, loc.lng, 3)
-          setGeohash(gh)
-          setLocation(loc)
-        } else {
-          setStatus('error')
-          setErrorMsg('Location access needed to find nearby users.')
-          return
-        }
+        const activeLoc = loc || DEFAULT_LOCATION
+        const { encodeGeoHash } = await import('../utils/geohash')
+        gh = encodeGeoHash(activeLoc.lat, activeLoc.lng, 3)
+        setGeohash(gh)
+        if (loc) setLocation(loc)
       } else {
         setGeohash(gh)
       }
