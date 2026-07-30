@@ -3,7 +3,6 @@ import { DEMO_PRESETS } from '../data/presets'
 import { calcHssi } from '../pipeline/fusion'
 import { saveRecord, loadHistory } from '../utils/storage'
 import type { HerdStressResult, DemoPreset, FrameFeatures } from '../pipeline/types'
-import ScoreDial from './ScoreDial'
 
 interface HomeScreenProps {
   onPresetSelected: (result: HerdStressResult) => void
@@ -11,24 +10,35 @@ interface HomeScreenProps {
   onNavigateHistory: () => void
 }
 
+function dotColor(score: number): string {
+  if (score < 35) return '#84cc16'
+  if (score < 65) return '#d97706'
+  return '#b91c1c'
+}
+
+function scoreColor(score: number): string {
+  if (score < 35) return '#84cc16'
+  if (score < 65) return '#d97706'
+  return '#b91c1c'
+}
+
 export default function HomeScreen({ onPresetSelected, onNavigateMap, onNavigateHistory }: HomeScreenProps) {
   const [loading, setLoading] = useState(false)
   const history = loadHistory()
-  const lastScore = history.length > 0 ? history[0].score : null
+  const last = history.length > 0 ? history[0] : null
 
   const handlePreset = async (preset: DemoPreset) => {
     setLoading(true)
-    await new Promise(r => setTimeout(r, 600))
+    await new Promise(r => setTimeout(r, 400))
 
-    const history = loadHistory()
-
+    const h = loadHistory()
     const result = calcHssi(
       [] as FrameFeatures[],
       preset.precomputedSubscores.audio,
-      history
+      h
     )
 
-    const finalResult: HerdStressResult = {
+    const final: HerdStressResult = {
       ...result,
       score: preset.precomputedScore,
       clustering: preset.precomputedSubscores.clustering,
@@ -39,69 +49,70 @@ export default function HomeScreen({ onPresetSelected, onNavigateMap, onNavigate
     }
 
     saveRecord({
-      timestamp: finalResult.timestamp,
-      score: finalResult.score,
-      clustering: finalResult.clustering,
-      motion: finalResult.motion,
-      posture: finalResult.posture,
-      audio: finalResult.audio,
+      timestamp: final.timestamp,
+      score: final.score,
+      clustering: final.clustering,
+      motion: final.motion,
+      posture: final.posture,
+      audio: final.audio,
       animalCount: 15
     })
 
     setLoading(false)
-    onPresetSelected(finalResult)
+    onPresetSelected(final)
   }
 
   return (
     <div className="screen home-screen">
       {loading && (
         <div className="loading-overlay">
-          <div className="loading-spinner" />
-          <p>Analyzing herd video...</p>
-        </div>
-      )}
-      <header className="home-header">
-        <h1 className="app-title">HerdSense</h1>
-        <p className="app-subtitle">Livestock stress detection</p>
-      </header>
-
-      {lastScore !== null && (
-        <div className="last-scan-card" onClick={onNavigateHistory}>
-          <span className="last-scan-label">Last scan</span>
-          <div className="last-scan-score">
-            <ScoreDial score={lastScore} size={48} />
-          </div>
+          <div className="spinner" />
+          <p>Analyzing herd...</p>
         </div>
       )}
 
-      <section className="presets-section">
-        <h2 className="section-title">Demo presets</h2>
-        <div className="presets-grid">
-          {DEMO_PRESETS.map(preset => (
-            <button
-              key={preset.id}
-              className={`preset-card preset-${preset.id}`}
-              onClick={() => handlePreset(preset)}
-            >
-              <span className="preset-label">{preset.label}</span>
-              <ScoreDial score={preset.precomputedScore} size={64} />
-              <span className="preset-desc">{preset.description}</span>
-            </button>
-          ))}
-        </div>
-      </section>
+      <div className="home-brand">
+        <h1>HerdSense</h1>
+        <p>Livestock stress detection</p>
+      </div>
 
-      <nav className="home-nav">
-        <button className="nav-btn nav-btn-primary" onClick={() => alert('Camera recording coming soon')}>
-          Record New
+      <button className="record-btn" onClick={() => alert('Camera coming soon')}>
+        Record New
+      </button>
+
+      <div className="scenarios-label">Demo scenarios</div>
+
+      <div className="scenario-list">
+        {DEMO_PRESETS.map(p => (
+          <button key={p.id} className="scenario-item" onClick={() => handlePreset(p)}>
+            <span className="scenario-dot" style={{ background: dotColor(p.precomputedScore) }} />
+            <div className="scenario-info">
+              <span className="scenario-name">{p.label}</span>
+              <span className="scenario-desc">{p.description}</span>
+            </div>
+            <span className="scenario-score" style={{ color: scoreColor(p.precomputedScore) }}>
+              {p.precomputedScore}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      {last && (
+        <div className="last-resume" onClick={onNavigateHistory}>
+          Last: {last.score} on {new Date(last.timestamp).toLocaleDateString()}
+        </div>
+      )}
+
+      <div className="home-footer">
+        <button className="footer-btn" onClick={onNavigateMap}>
+          <span>&#x1F5FA;</span>
+          <span>Map</span>
         </button>
-        <button className="nav-btn" onClick={onNavigateMap}>
-          View Regional Map
+        <button className="footer-btn" onClick={onNavigateHistory}>
+          <span>&#x1F4CB;</span>
+          <span>History</span>
         </button>
-        <button className="nav-btn" onClick={onNavigateHistory}>
-          View History
-        </button>
-      </nav>
+      </div>
     </div>
   )
 }
