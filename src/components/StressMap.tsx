@@ -4,9 +4,9 @@ import { getReportsUpToDay, getClusters, getNdviAtDay, NDVI_READINGS } from '../
 import { getNdviTimeline } from '../data/mock-ndvi'
 
 function scoreColor(score: number): string {
-  if (score < 35) return '#4ade80'
-  if (score < 65) return '#fbbf24'
-  return '#ef4444'
+  if (score < 35) return '#84cc16'
+  if (score < 65) return '#d97706'
+  return '#b91c1c'
 }
 
 function scoreOpacity(score: number): number {
@@ -42,13 +42,13 @@ export default function StressMap({ onBack }: StressMapProps) {
 
       <div className="map-legend">
         <span className="legend-item">
-          <span className="legend-dot" style={{ background: '#4ade80' }} /> Low (0-35)
+          <span className="legend-dot" style={{ background: '#84cc16' }} /> Low (0-35)
         </span>
         <span className="legend-item">
-          <span className="legend-dot" style={{ background: '#fbbf24' }} /> Moderate (36-65)
+          <span className="legend-dot" style={{ background: '#d97706' }} /> Moderate (36-65)
         </span>
         <span className="legend-item">
-          <span className="legend-dot" style={{ background: '#ef4444' }} /> Critical (66-100)
+          <span className="legend-dot" style={{ background: '#b91c1c' }} /> Critical (66-100)
         </span>
       </div>
 
@@ -93,8 +93,8 @@ export default function StressMap({ onBack }: StressMapProps) {
                 center={[cluster.center.lat, cluster.center.lng]}
                 radius={15000}
                 pathOptions={{
-                  color: '#ef4444',
-                  fillColor: '#ef4444',
+                  color: '#b91c1c',
+                  fillColor: '#b91c1c',
                   fillOpacity: 0.08,
                   weight: 2,
                   dashArray: '5 5'
@@ -167,19 +167,19 @@ export default function StressMap({ onBack }: StressMapProps) {
 
       <div className="stats-row">
         <div className="stat-card">
-          <div className="stat-number" style={{ color: '#4ade80' }}>
+          <div className="stat-number" style={{ color: '#84cc16' }}>
             {reports.length}
           </div>
           <div className="stat-label">Reports</div>
         </div>
         <div className="stat-card">
-          <div className="stat-number" style={{ color: highStressCount > 5 ? '#ef4444' : '#fbbf24' }}>
+          <div className="stat-number" style={{ color: highStressCount > 5 ? '#b91c1c' : '#d97706' }}>
             {highStressCount}
           </div>
           <div className="stat-label">High stress</div>
         </div>
         <div className="stat-card">
-          <div className="stat-number" style={{ color: clusters.length > 0 ? '#ef4444' : '#94a3b8' }}>
+          <div className="stat-number" style={{ color: clusters.length > 0 ? '#b91c1c' : '#a8a29e' }}>
             {clusters.length}
           </div>
           <div className="stat-label">Alert zones</div>
@@ -217,7 +217,7 @@ export default function StressMap({ onBack }: StressMapProps) {
             const barHeight = Math.max(2, r.ndvi * 200)
             const isAlertDay = r.day === timeline.alertDay
             const isBreach = r.ndvi < 0.30
-            const barColor = isAlertDay ? '#4ade80' : isBreach ? '#ef4444' : '#2563eb'
+            const barColor = isAlertDay ? '#84cc16' : isBreach ? '#b91c1c' : '#06b6d4'
             return (
               <div key={r.day} className="chart-bar-wrapper">
                 <div

@@ -5,15 +5,16 @@ interface ScoreDialProps {
 
 export default function ScoreDial({ score, size }: ScoreDialProps) {
   const radius = size / 2
-  const strokeWidth = size * 0.08
+  const strokeWidth = size * 0.09
+  const innerRadius = radius - strokeWidth * 1.5
   const normalizedRadius = radius - strokeWidth
   const circumference = 2 * Math.PI * normalizedRadius
   const progress = score / 100
   const strokeDashoffset = circumference * (1 - progress)
 
-  const color = score < 35 ? '#4ade80' : score < 65 ? '#fbbf24' : '#ef4444'
-  const textColor = score < 35 ? '#166534' : score < 65 ? '#92400e' : '#991b1b'
-  const bgColor = score < 35 ? '#052e16' : score < 65 ? '#451a03' : '#450a0a'
+  const color = score < 35 ? '#84cc16' : score < 65 ? '#d97706' : '#b91c1c'
+  const textColor = score < 35 ? '#bef264' : score < 65 ? '#fde68a' : '#fca5a5'
+  const bgColor = score < 35 ? '#1a2e05' : score < 65 ? '#3b2200' : '#450a0a'
 
   return (
     <svg
@@ -42,19 +43,38 @@ export default function ScoreDial({ score, size }: ScoreDialProps) {
         strokeDashoffset={strokeDashoffset}
         strokeLinecap="round"
         transform={`rotate(-90 ${radius} ${radius})`}
-        style={{ transition: 'stroke-dashoffset 0.5s ease' }}
+        style={{ transition: 'stroke-dashoffset 0.6s ease' }}
+      />
+      <circle
+        cx={radius}
+        cy={radius}
+        r={innerRadius}
+        fill="none"
+        stroke="rgba(255,255,255,0.06)"
+        strokeWidth={1}
       />
       <text
         x={radius}
-        y={radius}
+        y={radius - size * 0.08}
         textAnchor="middle"
-        dominantBaseline="central"
         fill={textColor}
-        fontSize={size * 0.3}
-        fontWeight="bold"
-        fontFamily="system-ui, sans-serif"
+        fontSize={size * 0.36}
+        fontWeight="800"
+        fontFamily="Inter, system-ui, sans-serif"
       >
         {score}
+      </text>
+      <text
+        x={radius}
+        y={radius + size * 0.14}
+        textAnchor="middle"
+        fill="rgba(255,255,255,0.3)"
+        fontSize={size * 0.07}
+        fontWeight="600"
+        fontFamily="Inter, system-ui, sans-serif"
+        letterSpacing="0.15em"
+      >
+        STRESS
       </text>
     </svg>
   )
