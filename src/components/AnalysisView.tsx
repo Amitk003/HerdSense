@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { HerdStressResult } from '../pipeline/types'
 import ScoreDial from './ScoreDial'
 
@@ -9,82 +10,88 @@ interface AnalysisViewProps {
 }
 
 function TrendIcon({ trend }: { trend: string }) {
-  if (trend === 'improving') {
-    return <span className="trend-icon trend-down">&#8595;</span>
-  }
-  if (trend === 'escalating') {
-    return <span className="trend-icon trend-up">&#8593;</span>
-  }
-  return <span className="trend-icon trend-stable">&#8594;</span>
+  if (trend === 'improving') return <span className="trend-arrow down">&#8595;</span>
+  if (trend === 'escalating') return <span className="trend-arrow up">&#8593;</span>
+  return <span className="trend-arrow right">&#8212;</span>
 }
 
-function ScoreBar({ label, value, color }: { label: string; value: number; color: string }) {
-  const pct = Math.round(value * 100)
-  return (
-    <div className="score-bar-row">
-      <span className="score-bar-label">{label}</span>
-      <div className="score-bar-track">
-        <div
-          className="score-bar-fill"
-          style={{ width: pct + '%', backgroundColor: color }}
-        />
-      </div>
-      <span className="score-bar-value">{pct}%</span>
-    </div>
-  )
+function TrendLabel({ trend }: { trend: string }) {
+  if (trend === 'improving') return <span className="trend-label falling">Falling</span>
+  if (trend === 'escalating') return <span className="trend-label rising">Rising</span>
+  return <span className="trend-label flat">Stable</span>
 }
+
+const SUB_SCORES: { key: keyof HerdStressResult; label: string; color: string }[] = [
+  { key: 'clustering', label: 'C', color: '#84cc16' },
+  { key: 'motion', label: 'M', color: '#06b6d4' },
+  { key: 'posture', label: 'P', color: '#d97706' },
+  { key: 'audio', label: 'A', color: '#a78bfa' }
+]
 
 export default function AnalysisView({ result, onBack, onViewHistory, onViewMap }: AnalysisViewProps) {
-  const barColor = result.score < 35 ? '#4ade80' : result.score < 65 ? '#fbbf24' : '#ef4444'
+  const [toast, setToast] = useState('')
+  const barColor = result.score < 35 ? '#84cc16' : result.score < 65 ? '#d97706' : '#b91c1c'
+  const total = result.clustering + result.motion + result.posture + result.audio
+
+  const copyReport = async () => {
+    const p = { lat: 3.5, lng: 38.5, score: result.score, timestamp: result.timestamp }
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(p))
+      setToast('Report copied')
+    } catch {
+      setToast('Copy failed - use HTTPS')
+    }
+    setTimeout(() => setToast(''), 2000)
+  }
 
   return (
     <div className="screen analysis-screen">
-      <header className="analysis-header">
-        <button className="back-btn" onClick={onBack}>&#8592; Back</button>
-        <h2 className="analysis-title">Results</h2>
-      </header>
+      {toast && <div className="toast">{toast}</div>}
 
-      <div className="score-main">
-        <ScoreDial score={result.score} size={160} />
-        <div className="trend-row">
+      <button className="back-link" onClick={onBack}>&#8592; Back</button>
+
+      <div className="analysis-hero">
+        <ScoreDial score={result.score} size={180} />
+        <div className="analysis-trend">
           <TrendIcon trend={result.trend} />
-          <span className={`trend-label trend-${result.trend}`}>
-            {result.trend.charAt(0).toUpperCase() + result.trend.slice(1)}
-          </span>
+          <TrendLabel trend={result.trend} />
         </div>
       </div>
 
-      <div className="recommendation-box" style={{ borderColor: barColor }}>
-        <p className="recommendation-text">{result.recommendation}</p>
+      <div className="analysis-breakdown">
+        <div className="stacked-bar">
+          {SUB_SCORES.map(s => {
+            const val = result[s.key] as number
+            const pct = total > 0 ? (val / total) * 100 : 0
+            return (
+              <div
+                key={s.key}
+                className="stacked-bar-seg"
+                style={{ width: pct + '%', backgroundColor: s.color }}
+              />
+            )
+          })}
+        </div>
+        <div className="subscore-labels">
+          {SUB_SCORES.map(s => (
+            <span key={s.key}>
+              <span className="subscore-dot" style={{ background: s.color }} />
+              {s.label} {Math.round((result[s.key] as number) * 100)}%
+            </span>
+          ))}
+        </div>
       </div>
 
-      <section className="breakdown-section">
-        <h3 className="section-title">Score breakdown</h3>
-        <ScoreBar label="Clustering" value={result.clustering} color="#4ade80" />
-        <ScoreBar label="Motion" value={result.motion} color="#60a5fa" />
-        <ScoreBar label="Posture" value={result.posture} color="#fbbf24" />
-        <ScoreBar label="Audio" value={result.audio} color="#a78bfa" />
-      </section>
-
-      <div className="share-row">
-        <button className="share-btn" onClick={() => {
-          const payload = {
-            lat: 3.5,
-            lng: 38.5,
-            score: result.score,
-            timestamp: result.timestamp
-          }
-          navigator.clipboard.writeText(JSON.stringify(payload, null, 2))
-          alert('Anonymized report copied to clipboard:\n' + JSON.stringify(payload))
-        }}>
-          Share Anonymized
-        </button>
+      <div className="analysis-recommendation">
+        <span className="rec-icon" style={{ background: barColor, color: '#1a1410' }}>!</span>
+        {result.recommendation}
       </div>
 
-      <nav className="analysis-nav">
-        <button className="nav-btn" onClick={onViewHistory}>View History</button>
-        <button className="nav-btn" onClick={onViewMap}>View Map</button>
-      </nav>
+      <div className="analysis-actions">
+        <button className="action-btn share" onClick={copyReport}>Share</button>
+        <button className="action-btn" onClick={onViewMap}>Map</button>
+        <button className="action-btn" onClick={onViewHistory}>History</button>
+      </div>
     </div>
   )
 }

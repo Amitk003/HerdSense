@@ -4,16 +4,16 @@ interface ScoreDialProps {
 }
 
 export default function ScoreDial({ score, size }: ScoreDialProps) {
-  const radius = size / 2
-  const strokeWidth = size * 0.08
-  const normalizedRadius = radius - strokeWidth
-  const circumference = 2 * Math.PI * normalizedRadius
-  const progress = score / 100
-  const strokeDashoffset = circumference * (1 - progress)
+  const r = size / 2
+  const sw = size * 0.09
+  const nr = r - sw
+  const circ = 2 * Math.PI * nr
+  const pct = score / 100
+  const offset = circ * (1 - pct)
 
-  const color = score < 35 ? '#4ade80' : score < 65 ? '#fbbf24' : '#ef4444'
-  const textColor = score < 35 ? '#166534' : score < 65 ? '#92400e' : '#991b1b'
-  const bgColor = score < 35 ? '#052e16' : score < 65 ? '#451a03' : '#450a0a'
+  const arc = score < 35 ? '#84cc16' : score < 65 ? '#d97706' : '#b91c1c'
+  const num = score < 35 ? '#bef264' : score < 65 ? '#fde68a' : '#fca5a5'
+  const track = score < 35 ? '#1a2e05' : score < 65 ? '#3b2200' : '#450a0a'
 
   return (
     <svg
@@ -24,37 +24,38 @@ export default function ScoreDial({ score, size }: ScoreDialProps) {
       aria-label={`Stress score ${score} out of 100`}
     >
       <circle
-        cx={radius}
-        cy={radius}
-        r={normalizedRadius}
-        fill="none"
-        stroke={bgColor}
-        strokeWidth={strokeWidth}
+        cx={r} cy={r} r={nr}
+        fill="none" stroke={track} strokeWidth={sw}
       />
       <circle
-        cx={radius}
-        cy={radius}
-        r={normalizedRadius}
-        fill="none"
-        stroke={color}
-        strokeWidth={strokeWidth}
-        strokeDasharray={circumference}
-        strokeDashoffset={strokeDashoffset}
+        cx={r} cy={r} r={nr}
+        fill="none" stroke={arc} strokeWidth={sw}
+        strokeDasharray={circ}
+        strokeDashoffset={offset}
         strokeLinecap="round"
-        transform={`rotate(-90 ${radius} ${radius})`}
-        style={{ transition: 'stroke-dashoffset 0.5s ease' }}
+        transform={`rotate(-90 ${r} ${r})`}
+        style={{ transition: 'stroke-dashoffset 0.6s ease' }}
       />
       <text
-        x={radius}
-        y={radius}
+        x={r} y={r + size * 0.04}
         textAnchor="middle"
-        dominantBaseline="central"
-        fill={textColor}
-        fontSize={size * 0.3}
-        fontWeight="bold"
-        fontFamily="system-ui, sans-serif"
+        fill={num}
+        fontSize={size * 0.34}
+        fontWeight="800"
+        fontFamily="Inter, sans-serif"
       >
         {score}
+      </text>
+      <text
+        x={r} y={r + size * 0.22}
+        textAnchor="middle"
+        fill="#a8a29e"
+        fontSize={size * 0.065}
+        fontWeight="600"
+        fontFamily="Inter, sans-serif"
+        letterSpacing="0.18em"
+      >
+        STRESS
       </text>
     </svg>
   )

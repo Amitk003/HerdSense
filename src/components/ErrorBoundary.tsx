@@ -25,7 +25,10 @@ export default class ErrorBoundary extends React.Component<Props, State> {
         <div className="screen error-screen">
           <h2>Something went wrong</h2>
           <p className="error-message">{this.state.error?.message}</p>
-          <button className="back-btn" onClick={() => { this.setState({ hasError: false, error: null }); window.location.reload() }}>
+          <button style={{
+            padding: '14px 28px', background: '#d97706', color: '#1a1410',
+            border: 'none', borderRadius: 12, fontSize: 15, fontWeight: 700, cursor: 'pointer'
+          }} onClick={() => { this.setState({ hasError: false, error: null }); window.location.reload() }}>
             Reload App
           </button>
         </div>

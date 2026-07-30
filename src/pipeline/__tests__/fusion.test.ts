@@ -7,7 +7,7 @@ describe('calcHssi', () => {
     const result = calcHssi([], 0, [])
     expect(result.score).toBe(0)
     expect(result.trend).toBe('stable')
-    expect(result.recommendation).toContain('Normal')
+    expect(result.recommendation).toContain('healthy')
   })
 
   it('returns high score with high feature values', () => {

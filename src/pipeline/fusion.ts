@@ -97,19 +97,19 @@ function calcTrend(currentScore: number, history: ScanRecord[]): 'improving' | '
 
 function getRecommendation(score: number, trend: string): string {
   if (score < 35) {
-    return 'Normal conditions. Continue standard grazing schedule.'
+    return 'Herd looks healthy. No change needed.'
   }
 
   if (score < 65) {
     if (trend === 'escalating') {
-      return 'Moderate stress escalating. Consider moving herd toward water within 4 days.'
+      return 'Stress is rising. Best to move the herd toward water in the next few days.'
     }
-    return 'Moderate stress detected. Monitor regularly.'
+    return 'Some stress signs. Keep watching the herd.'
   }
 
   if (trend === 'escalating') {
-    return 'Critical stress escalating. Activate forage reserves or begin migration immediately.'
+    return 'Herd needs help. Move to forage reserves or start migration now.'
   }
 
-  return 'High stress detected. Consider moving herd or releasing forage reserves.'
+  return 'High stress. Relocate the herd or release stored feed.'
 }
