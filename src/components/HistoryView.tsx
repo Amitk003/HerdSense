@@ -53,7 +53,7 @@ export default function HistoryView({ onBack, onRunNew }: HistoryViewProps) {
         <>
           <div className="history-list">
             {history.map((r, i) => (
-              <div key={i} className="card history-item">
+              <div key={r.timestamp || i} className="card history-item">
                 <div className="history-item-score" style={{ background: scoreBg(r.score), color: scoreColor(r.score) }}>
                   {r.score}
                 </div>

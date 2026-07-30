@@ -45,7 +45,13 @@ export default function NearbyFeed({ reports, location, onSelect }: NearbyFeedPr
   return (
     <div className={`nearby-feed ${expanded ? 'expanded' : ''}`}>
       <div className="feed-handle" />
-      <div className="feed-header" onClick={() => setExpanded(!expanded)}>
+      <div
+        className="feed-header"
+        role="button"
+        tabIndex={0}
+        onClick={() => setExpanded(!expanded)}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setExpanded(!expanded) }}
+      >
         <div className="feed-header-left">
           <span className="feed-title">Nearby</span>
           <span className="feed-summary">
@@ -86,7 +92,10 @@ export default function NearbyFeed({ reports, location, onSelect }: NearbyFeedPr
                 <div
                   key={r.id}
                   className={`feed-item${isHigh ? ' feed-item-high' : ''}`}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => onSelect(r)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onSelect(r) }}
                 >
                   {isHigh && <div className="feed-item-accent" />}
                   <span
