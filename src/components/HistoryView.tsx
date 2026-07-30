@@ -8,15 +8,15 @@ interface HistoryViewProps {
 }
 
 function scoreBg(s: number): string {
-  if (s < SCORE_LOW) return '#1a2e05'
-  if (s < SCORE_HIGH) return '#3b2200'
-  return '#450a0a'
+  if (s < SCORE_LOW) return 'rgba(34, 197, 94, 0.15)'
+  if (s < SCORE_HIGH) return 'rgba(245, 158, 11, 0.15)'
+  return 'rgba(239, 68, 68, 0.15)'
 }
 
 function scoreColor(s: number): string {
-  if (s < SCORE_LOW) return '#84cc16'
-  if (s < SCORE_HIGH) return '#d97706'
-  return '#b91c1c'
+  if (s < SCORE_LOW) return 'var(--success)'
+  if (s < SCORE_HIGH) return 'var(--warning)'
+  return 'var(--danger)'
 }
 
 export default function HistoryView({ onBack, onRunNew }: HistoryViewProps) {
@@ -35,22 +35,17 @@ export default function HistoryView({ onBack, onRunNew }: HistoryViewProps) {
 
   return (
     <div className="screen history-screen">
-      <div className="history-header">
-        <button className="back-link" onClick={onBack}>&#8592; Back</button>
-        <h2>History</h2>
-      </div>
-
       {history.length === 0 ? (
         <div className="empty-state">
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--sand)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg className="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
             <line x1="16" y1="2" x2="16" y2="6" />
             <line x1="8" y1="2" x2="8" y2="6" />
             <line x1="3" y1="10" x2="21" y2="10" />
           </svg>
-          <p>No scans yet</p>
+          <span className="empty-state-title">No scans yet</span>
           <span className="empty-state-sub">Run a scan to see results here</span>
-          <button className="nav-btn" style={{ maxWidth: 200, marginTop: 16 }} onClick={onRunNew}>
+          <button className="action-btn" style={{ maxWidth: 200, marginTop: 8 }} onClick={onRunNew}>
             Run a scan
           </button>
         </div>
@@ -58,7 +53,7 @@ export default function HistoryView({ onBack, onRunNew }: HistoryViewProps) {
         <>
           <div className="history-list">
             {history.map((r, i) => (
-              <div key={i} className="history-item">
+              <div key={i} className="card history-item">
                 <div className="history-item-score" style={{ background: scoreBg(r.score), color: scoreColor(r.score) }}>
                   {r.score}
                 </div>

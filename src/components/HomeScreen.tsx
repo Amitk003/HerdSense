@@ -52,17 +52,35 @@ export default function HomeScreen({ onPresetSelected, onNavigateCamera, onNavig
     <div className="screen home-screen">
       {loading && (
         <div className="loading-overlay">
-          <div className="loading-spinner" />
+          <div className="spinner" />
           <p>Analyzing herd video...</p>
         </div>
       )}
-      <header className="home-header">
+
+      <div className="home-header">
         <h1 className="app-title">HerdSense</h1>
         <p className="app-subtitle">Livestock stress detection</p>
-      </header>
+      </div>
+
+      <div className="home-cta">
+        <button className="record-btn-big" onClick={onNavigateCamera}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+            <circle cx="12" cy="13" r="4" />
+          </svg>
+          Record New
+        </button>
+        <button className="home-quick-btn" onClick={onNavigateMap} aria-label="Map">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" />
+            <line x1="8" y1="2" x2="8" y2="18" />
+            <line x1="16" y1="6" x2="16" y2="22" />
+          </svg>
+        </button>
+      </div>
 
       {lastScore !== null && (
-        <div className="last-scan-card" onClick={onNavigateHistory}>
+        <div className="card last-scan-card" onClick={onNavigateHistory}>
           <span className="last-scan-label">Last scan</span>
           <div className="last-scan-score">
             <ScoreDial score={lastScore} size={40} />
@@ -70,26 +88,16 @@ export default function HomeScreen({ onPresetSelected, onNavigateCamera, onNavig
         </div>
       )}
 
-      <div className="home-cta">
-        <button className="record-btn-big" onClick={onNavigateCamera}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-            <circle cx="12" cy="13" r="4" />
-          </svg>
-          Record New
-        </button>
-      </div>
-
-      <section className="presets-section">
-        <h2 className="section-title">Demo presets</h2>
+      <section>
+        <h2 className="section-label">Demo presets</h2>
         <div className="presets-grid">
           {DEMO_PRESETS.map(preset => (
             <button
               key={preset.id}
-              className={`preset-card preset-${preset.id}`}
+              className={`card preset-card preset-${preset.id}`}
               onClick={() => handlePreset(preset)}
             >
-              <ScoreDial score={preset.precomputedScore} size={56} />
+              <ScoreDial score={preset.precomputedScore} size={52} />
               <div className="preset-info">
                 <span className="preset-label">{preset.label}</span>
                 <span className="preset-desc">{preset.description}</span>
@@ -99,14 +107,23 @@ export default function HomeScreen({ onPresetSelected, onNavigateCamera, onNavig
         </div>
       </section>
 
-      <nav className="home-nav">
-        <button className="nav-btn" onClick={onNavigateMap}>
-          View Regional Map
-        </button>
-        <button className="nav-btn" onClick={onNavigateHistory}>
-          View History
-        </button>
-      </nav>
+      <div className="home-nav">
+        <div className="card" onClick={onNavigateHistory}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block', margin: '0 auto 6px' }}>
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
+          </svg>
+          History
+        </div>
+        <div className="card" onClick={onNavigateMap}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block', margin: '0 auto 6px' }}>
+            <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" />
+            <line x1="8" y1="2" x2="8" y2="18" />
+            <line x1="16" y1="6" x2="16" y2="22" />
+          </svg>
+          Map
+        </div>
+      </div>
     </div>
   )
 }

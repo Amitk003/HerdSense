@@ -74,15 +74,63 @@ export default function App() {
     setFocusedReportId(report.id)
   }, [])
 
+  const navTo = useCallback((s: Screen) => {
+    setResult(null)
+    setScreen(s)
+  }, [])
+
+  function statusLabel() {
+    if (!isOnline) return { dot: 'offline', label: 'Offline' }
+    if (peer.status === 'error') return { dot: 'error', label: peer.errorMsg }
+    if (peer.status === 'connecting') return { dot: 'connecting', label: 'Connecting...' }
+    if (peer.status === 'connected' && peer.peerCount === 0) return { dot: 'online', label: 'No nearby users' }
+    if (peer.status === 'connected' && peer.peerCount > 0) return { dot: 'online', label: `${peer.peerCount} nearby` }
+    return { dot: 'offline', label: 'Offline' }
+  }
+
+  const st = statusLabel()
+
   return (
     <ErrorBoundary>
     <div className="app">
-      {!isOnline ? <div className="peer-badge offline">Offline</div>
-        : peer.status === 'error' ? <div className="peer-badge error">{peer.errorMsg}</div>
-        : peer.status === 'connecting' ? <div className="peer-badge connecting">Connecting...</div>
-        : peer.status === 'connected' && peer.peerCount === 0 ? <div className="peer-badge connected">No nearby users</div>
-        : peer.status === 'connected' && peer.peerCount > 0 ? <div className="peer-badge connected">{peer.peerCount} nearby</div>
-        : null}
+      <header className="app-header">
+        <div className="app-header-left">
+          <span className="app-header-brand">
+            <span className="app-header-brand-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--success)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
+            </span>
+            HerdSense
+          </span>
+          <span className="app-header-status">
+            <span className={`status-dot ${st.dot}`} />
+            {st.label}
+          </span>
+        </div>
+        <div className="app-header-actions">
+          {screen !== 'home' && (
+            <button className="header-nav-btn" onClick={() => navTo('home')}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                <polyline points="9 22 9 12 15 12 15 22" />
+              </svg>
+              Home
+            </button>
+          )}
+          <button
+            className={`header-nav-btn${screen === 'map' ? ' active' : ''}`}
+            onClick={() => setScreen('map')}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" />
+              <line x1="8" y1="2" x2="8" y2="18" />
+              <line x1="16" y1="6" x2="16" y2="22" />
+            </svg>
+            Map
+          </button>
+        </div>
+      </header>
 
       {toast && <div className="toast">{toast}</div>}
 
