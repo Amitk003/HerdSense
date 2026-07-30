@@ -1,118 +1,61 @@
-# User Guide
-
-How to use the HerdSense web app.
-
----
+# HerdSense User Guide
 
 ## Getting started
 
-1. Open the HerdSense web app on your phone or computer
-2. You will see the home screen with three demo buttons
-3. The app works without internet after the page loads
+Open the web app on your phone. No installation needed. The app works in any modern browser (Chrome, Safari, Firefox).
 
----
+## Taking a reading
 
-## Taking a stress reading
+### Option 1: Demo presets
 
-1. Tap one of the demo preset buttons on the home screen:
-   - "Healthy Herd (Score ~22)"
-   - "Early Stress (Score ~58)"
-   - "Critical Distress (Score ~84)"
-2. The app plays the video and processes it in your browser
-3. After a few seconds, you will see the stress score
+On the home screen, tap one of the three demo presets. These show example scores for healthy, early stress, and critical stress scenarios. Useful for understanding how the app works.
 
----
+### Option 2: Record a video
+
+1. Tap "Record New"
+2. Point your camera at your herd
+3. Tap "Start Recording"
+4. The app records 20 seconds of video
+5. Processing happens on your phone. Takes a few seconds.
+6. Your stress score appears
+
+### Option 3: Upload a file (desktop)
+
+If your device has no camera, you can upload a video file instead.
 
 ## Understanding the score
 
-The Herd Stress Score goes from 0 to 100:
+| Score | Color | Meaning |
+|-------|-------|---------|
+| 0 to 35 | Green | Herd looks healthy. No change needed. |
+| 36 to 65 | Yellow | Some stress signs. Keep watching. |
+| 66 to 100 | Red | Herd needs help. Take action. |
 
-- **0 to 35 (Green):** Normal. Your herd is in good condition. Continue normal grazing.
-- **36 to 65 (Amber):** Moderate stress. Your animals are showing early signs of stress. Consider moving to better grazing or checking water availability.
-- **66 to 100 (Red):** Critical. Your herd is under significant stress. Take action soon. Move toward water, release forage reserves, or begin migration preparations.
+The score has four parts:
+- **Clustering**: How bunched together are the animals?
+- **Motion**: Is their walking pattern normal or erratic?
+- **Posture**: Are their heads drooping?
+- **Audio**: Are they making distress sounds?
 
-The app also shows a trend arrow:
+## Trend
 
-- **Up arrow:** Stress is getting worse compared to your last reading
-- **Right arrow:** Stress is about the same
-- **Down arrow:** Stress is improving
+The app compares your current score to your previous scans. The trend tells you if stress is rising (escalating), falling (improving), or staying the same (stable).
 
----
+## Recommendations
 
-## Viewing the action recommendation
+Based on your score and trend, the app suggests what to do next:
+- Move the herd toward water
+- Release stored feed
+- Start migration
 
-After each reading, the app shows a recommendation:
+## Sharing
 
-- If score is low: "Normal conditions. Standard grazing schedule."
-- If score is medium and rising: "Moderate stress. Consider moving herd within 4 days."
-- If score is high: "High distress signal. Activate forage release or migration."
+Tap "Share" to send an anonymous report to nearby users. The report contains only your score, location (approximately 156km box), and timestamp. No images, no video, no identity.
 
----
+## Regional map
 
-## Sharing data (optional)
+Tap "View Regional Map" to see reports from nearby users. Markers are colored by stress level. When 3+ high-stress reports cluster within 15km, an alert zone appears and a notification shows.
 
-The app never sends your data anywhere unless you choose to share.
+## History
 
-To share:
-1. After a reading, tap the "Share Anonymized" button
-2. The app sends only: an approximate location (not exact), the stress score, number of animals, and the time
-3. No video, no audio, no images, and no personal information is sent
-4. You can stop sharing at any time
-
-When you and other herders share data, a regional stress map becomes available showing conditions across a wider area.
-
----
-
-## Viewing the regional map
-
-1. Tap "View Regional Map" on the home screen
-2. The map shows markers colored by stress level
-3. Green markers mean low stress across those herds
-4. Red markers mean high stress
-5. Click a marker to see details: score, number of animals, time
-6. Use the timeline slider at the bottom to see how stress changed over recent days
-7. Toggle the NDVI overlay to compare with satellite data
-
----
-
-## Viewing your history
-
-1. Tap "View History" on the home screen
-2. You will see a list of your past readings with scores and dates
-3. A sparkline chart shows the trend over time
-
----
-
-## Tips for good readings
-
-- Use the demo presets for the best experience
-- If uploading your own video, make sure animals are clearly visible
-- Try to get most of the herd in the frame. At least 5 animals gives better results.
-- Take readings at the same time of day for consistent comparisons
-- Hold the phone steady when recording
-
----
-
-## Privacy
-
-- Your videos never leave your browser
-- Your exact location never leaves your browser
-- Shared data is anonymous (rough location only, no personal info)
-- You control sharing at all times
-- You can clear all your data from the app settings at any time
-
----
-
-## Troubleshooting
-
-**The score seems wrong:**
-Make sure animals are clearly visible in the video. Try a different demo preset.
-
-**The app is slow:**
-Close other browser tabs. The processing takes a few seconds on older phones.
-
-**The map shows no data:**
-The map uses sample data for demonstration. In production, it would show data from people who chose to share.
-
-**The video does not play:**
-Make sure your browser supports MP4 video. Try Chrome or Edge.
+Your past scans are saved on your phone. Tap "View History" to see how your herd's stress has changed over time.
