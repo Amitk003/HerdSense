@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import ErrorBoundary from './components/ErrorBoundary'
 import HomeScreen from './components/HomeScreen'
 import CameraView from './components/CameraView'
@@ -18,6 +18,18 @@ export default function App() {
   const [result, setResult] = useState<HerdStressResult | null>(null)
   const [focusedReportId, setFocusedReportId] = useState<string | null>(null)
   const [toast, setToast] = useState('')
+  const [isOnline, setIsOnline] = useState(navigator.onLine)
+
+  useEffect(() => {
+    const goOnline = () => setIsOnline(true)
+    const goOffline = () => setIsOnline(false)
+    window.addEventListener('online', goOnline)
+    window.addEventListener('offline', goOffline)
+    return () => {
+      window.removeEventListener('online', goOnline)
+      window.removeEventListener('offline', goOffline)
+    }
+  }, [])
 
   const peer = usePeerNetwork()
 
@@ -66,11 +78,24 @@ export default function App() {
   return (
     <ErrorBoundary>
     <div className="app">
-      {peer.status === 'connected' && (
-        <div className="peer-badge">
-          {peer.peerCount > 0 ? `${peer.peerCount} nearby` : 'Online'}
-        </div>
-      )}
+      {(() => {
+        if (!isOnline) {
+          return <div className="peer-badge offline">Offline</div>
+        }
+        if (peer.status === 'error') {
+          return <div className="peer-badge error">{peer.errorMsg}</div>
+        }
+        if (peer.status === 'connecting') {
+          return <div className="peer-badge connecting">Connecting...</div>
+        }
+        if (peer.status === 'connected' && peer.peerCount === 0) {
+          return <div className="peer-badge connected">No nearby users</div>
+        }
+        if (peer.status === 'connected' && peer.peerCount > 0) {
+          return <div className="peer-badge connected">{peer.peerCount} nearby</div>
+        }
+        return null
+      })()}
 
       {toast && <div className="toast">{toast}</div>}
 
