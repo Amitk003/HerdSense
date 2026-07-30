@@ -4,6 +4,7 @@ export interface BoundingBox {
   width: number
   height: number
   confidence: number
+  classId: number
   animalId: number
 }
 
@@ -41,6 +42,8 @@ export interface HerdStressResult {
   trend: 'improving' | 'stable' | 'escalating'
   recommendation: string
   timestamp: string
+  animalCount: number
+  species: string
 }
 
 export interface ScanRecord {
@@ -57,7 +60,6 @@ export interface DemoPreset {
   id: string
   label: string
   description: string
-  videoFile: string
   precomputedScore: number
   precomputedSubscores: {
     clustering: number
@@ -65,6 +67,8 @@ export interface DemoPreset {
     posture: number
     audio: number
   }
+  animalCount: number
+  species: string
 }
 
 export interface StressReport {
@@ -86,7 +90,4 @@ export interface AlertCluster {
   members: StressReport[]
 }
 
-export interface NdviReading {
-  date: string
-  ndvi: number
-}
+

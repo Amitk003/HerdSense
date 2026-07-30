@@ -25,9 +25,9 @@ describe('FeatureExtractor', () => {
       {
         frameIndex: 0,
         boxes: [
-          { x: 0, y: 0, width: 20, height: 20, confidence: 0.9, animalId: -1 },
-          { x: 100, y: 0, width: 20, height: 20, confidence: 0.9, animalId: -1 },
-          { x: 50, y: 100, width: 20, height: 20, confidence: 0.9, animalId: -1 }
+          { x: 0, y: 0, width: 20, height: 20, confidence: 0.9, classId: 19, animalId: -1 },
+          { x: 100, y: 0, width: 20, height: 20, confidence: 0.9, classId: 19, animalId: -1 },
+          { x: 50, y: 100, width: 20, height: 20, confidence: 0.9, classId: 19, animalId: -1 }
         ]
       }
     ]

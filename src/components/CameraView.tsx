@@ -3,10 +3,10 @@ import { Detector } from '../pipeline/detector'
 import { FeatureExtractor } from '../pipeline/features'
 import { calcHssi } from '../pipeline/fusion'
 import { saveRecord, loadHistory } from '../utils/storage'
-import type { HerdStressResult } from '../pipeline/types'
+import type { HerdStressResult, DetectionFrame } from '../pipeline/types'
+import { FPS } from '../constants'
 
 const RECORD_DURATION = 20
-const FPS = 30
 
 interface CameraViewProps {
   onComplete: (result: HerdStressResult) => void
@@ -58,7 +58,14 @@ export default function CameraView({ onComplete, onBack }: CameraViewProps) {
   const startRecording = useCallback(() => {
     if (!streamRef.current) return
     chunksRef.current = []
-    const recorder = new MediaRecorder(streamRef.current, { mimeType: 'video/webm' })
+    const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
+      ? 'video/webm;codecs=vp9'
+      : MediaRecorder.isTypeSupported('video/webm;codecs=vp8')
+        ? 'video/webm;codecs=vp8'
+        : MediaRecorder.isTypeSupported('video/webm')
+          ? 'video/webm'
+          : ''
+    const recorder = new MediaRecorder(streamRef.current, mimeType ? { mimeType } : {})
     recorderRef.current = recorder
 
     recorder.ondataavailable = (e) => {
@@ -117,7 +124,7 @@ export default function CameraView({ onComplete, onBack }: CameraViewProps) {
       const detector = new Detector()
       await detector.loadModel('/models/yolov8n.onnx')
 
-      const frames = await detector.detectFrames(video, totalFrames)
+      const frames: DetectionFrame[] = await detector.detectFrames(video, totalFrames)
 
       if (frames.length === 0) {
         setError('No animals detected in the video. Try recording again.')
@@ -130,7 +137,7 @@ export default function CameraView({ onComplete, onBack }: CameraViewProps) {
       const features = extractor.extract(video, frames, totalFrames)
 
       const history = loadHistory()
-      const result = calcHssi(features, 0, history)
+      const result = calcHssi(features, 0, history, frames)
 
       const final: HerdStressResult = {
         ...result,
@@ -144,7 +151,7 @@ export default function CameraView({ onComplete, onBack }: CameraViewProps) {
         motion: final.motion,
         posture: final.posture,
         audio: final.audio,
-        animalCount: frames.reduce((max, f) => Math.max(max, f.boxes.length), 0)
+        animalCount: final.animalCount
       })
 
       URL.revokeObjectURL(url)
@@ -175,7 +182,7 @@ export default function CameraView({ onComplete, onBack }: CameraViewProps) {
         const detector = new Detector()
         await detector.loadModel('/models/yolov8n.onnx')
 
-        const frames = await detector.detectFrames(video, totalFrames)
+        const frames: DetectionFrame[] = await detector.detectFrames(video, totalFrames)
 
         if (frames.length === 0) {
           setError('No animals detected in the video.')
@@ -188,7 +195,7 @@ export default function CameraView({ onComplete, onBack }: CameraViewProps) {
         const features = extractor.extract(video, frames, totalFrames)
 
         const history = loadHistory()
-        const result = calcHssi(features, 0, history)
+        const result = calcHssi(features, 0, history, frames)
 
         const final: HerdStressResult = {
           ...result,
@@ -202,7 +209,7 @@ export default function CameraView({ onComplete, onBack }: CameraViewProps) {
           motion: final.motion,
           posture: final.posture,
           audio: final.audio,
-          animalCount: frames.reduce((max, f) => Math.max(max, f.boxes.length), 0)
+          animalCount: final.animalCount
         })
 
         URL.revokeObjectURL(url)

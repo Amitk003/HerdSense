@@ -40,35 +40,4 @@ export function encodeGeoHash(lat: number, lng: number, precision = 3): string {
   return hash
 }
 
-export function geoHashBounds(hash: string): { lat: [number, number]; lng: [number, number] } {
-  let minLat = -90, maxLat = 90
-  let minLng = -180, maxLng = 180
-  let bit = 0
-  let isLng = true
 
-  for (let i = 0; i < hash.length; i++) {
-    const ch = BASE32.indexOf(hash[i])
-    for (let b = 4; b >= 0; b--) {
-      const mask = 1 << b
-      if (isLng) {
-        const mid = (minLng + maxLng) / 2
-        if (ch & mask) {
-          minLng = mid
-        } else {
-          maxLng = mid
-        }
-      } else {
-        const mid = (minLat + maxLat) / 2
-        if (ch & mask) {
-          minLat = mid
-        } else {
-          maxLat = mid
-        }
-      }
-      isLng = !isLng
-      bit++
-    }
-  }
-
-  return { lat: [minLat, maxLat], lng: [minLng, maxLng] }
-}

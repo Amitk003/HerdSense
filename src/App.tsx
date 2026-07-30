@@ -49,16 +49,15 @@ export default function App() {
   }, [])
 
   const handleShare = useCallback(() => {
-    if (!result) return
-    const loc = peer.location || { lat: 3.52, lng: 38.48 }
+    if (!result || !peer.location) return
     reportCounter++
     const report: StressReport = {
       id: `r-${Date.now()}-${reportCounter}`,
-      lat: loc.lat,
-      lng: loc.lng,
+      lat: peer.location.lat,
+      lng: peer.location.lng,
       score: result.score,
-      animalCount: 15,
-      species: 'cattle',
+      animalCount: result.animalCount,
+      species: result.species,
       timestamp: result.timestamp
     }
     peer.broadcast(report)
@@ -78,24 +77,12 @@ export default function App() {
   return (
     <ErrorBoundary>
     <div className="app">
-      {(() => {
-        if (!isOnline) {
-          return <div className="peer-badge offline">Offline</div>
-        }
-        if (peer.status === 'error') {
-          return <div className="peer-badge error">{peer.errorMsg}</div>
-        }
-        if (peer.status === 'connecting') {
-          return <div className="peer-badge connecting">Connecting...</div>
-        }
-        if (peer.status === 'connected' && peer.peerCount === 0) {
-          return <div className="peer-badge connected">No nearby users</div>
-        }
-        if (peer.status === 'connected' && peer.peerCount > 0) {
-          return <div className="peer-badge connected">{peer.peerCount} nearby</div>
-        }
-        return null
-      })()}
+      {!isOnline ? <div className="peer-badge offline">Offline</div>
+        : peer.status === 'error' ? <div className="peer-badge error">{peer.errorMsg}</div>
+        : peer.status === 'connecting' ? <div className="peer-badge connecting">Connecting...</div>
+        : peer.status === 'connected' && peer.peerCount === 0 ? <div className="peer-badge connected">No nearby users</div>
+        : peer.status === 'connected' && peer.peerCount > 0 ? <div className="peer-badge connected">{peer.peerCount} nearby</div>
+        : null}
 
       {toast && <div className="toast">{toast}</div>}
 

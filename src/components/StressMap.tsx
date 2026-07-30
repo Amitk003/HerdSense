@@ -2,10 +2,11 @@ import { useState, useMemo, useRef, useEffect } from 'react'
 import { MapContainer, TileLayer, Circle, CircleMarker, Tooltip, useMap } from 'react-leaflet'
 import type { StressReport, AlertCluster } from '../pipeline/types'
 import { findAlertClusters } from '../utils/clustering'
+import { SCORE_LOW, SCORE_HIGH } from '../constants'
 
 function scoreColor(s: number): string {
-  if (s < 35) return '#84cc16'
-  if (s < 65) return '#d97706'
+  if (s < SCORE_LOW) return '#84cc16'
+  if (s < SCORE_HIGH) return '#d97706'
   return '#b91c1c'
 }
 
@@ -22,6 +23,27 @@ interface MapControllerProps {
 function MapController({ focusedReportId, reports, onClusterAlert }: MapControllerProps) {
   const map = useMap()
   const prevClusterKeys = useRef<Set<string>>(new Set())
+  const [tileError, setTileError] = useState(false)
+
+  useEffect(() => {
+    const timeout = setTimeout(() => setTileError(true), 8000)
+    map.on('tileload', () => setTileError(false))
+    return () => clearTimeout(timeout)
+  }, [map])
+
+  if (tileError) {
+    return (
+      <div style={{
+        position: 'absolute', inset: 0, display: 'flex',
+        alignItems: 'center', justifyContent: 'center',
+        background: '#2d241e', zIndex: 500,
+        color: '#a8a29e', fontSize: 14, flexDirection: 'column', gap: 8
+      }}>
+        <span>Map tiles unavailable offline.</span>
+        <span style={{ fontSize: 12 }}>Report markers still show.</span>
+      </div>
+    )
+  }
 
   // Fly to report when focusedReportId changes
   useEffect(() => {
@@ -61,7 +83,7 @@ export default function StressMap({ onBack, reports = [], focusedReportId, onClu
 
   const center: [number, number] = reports.length > 0
     ? [reports[0].lat, reports[0].lng]
-    : [3.52, 38.48]
+    : [0, 20]
 
   const highStressCount = reports.filter(r => r.score > 60).length
 

@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Peer from 'peerjs'
 import type { StressReport } from '../pipeline/types'
+import { MAX_CACHED_REPORTS } from '../constants'
 
 const PEER_HOST = '0.peerjs.com'
 const PEER_PORT = 443
 const PEER_PATH = '/'
-const MAX_CACHED_REPORTS = 50
 
 export interface PeerState {
   status: 'connecting' | 'connected' | 'error'
@@ -79,7 +79,7 @@ export function usePeerNetwork(geoHashOverride?: string): PeerState {
         setGeohash(gh)
       }
 
-      const roomId = `hs-${gh}`
+      const roomId = gh
 
       // Try to become the room hub
       try {

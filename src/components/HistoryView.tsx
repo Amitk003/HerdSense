@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import { loadHistory, clearHistory } from '../utils/storage'
+import { SCORE_LOW, SCORE_HIGH } from '../constants'
 
 interface HistoryViewProps {
   onBack: () => void
@@ -6,24 +8,28 @@ interface HistoryViewProps {
 }
 
 function scoreBg(s: number): string {
-  if (s < 35) return '#1a2e05'
-  if (s < 65) return '#3b2200'
+  if (s < SCORE_LOW) return '#1a2e05'
+  if (s < SCORE_HIGH) return '#3b2200'
   return '#450a0a'
 }
 
 function scoreColor(s: number): string {
-  if (s < 35) return '#84cc16'
-  if (s < 65) return '#d97706'
+  if (s < SCORE_LOW) return '#84cc16'
+  if (s < SCORE_HIGH) return '#d97706'
   return '#b91c1c'
 }
 
 export default function HistoryView({ onBack, onRunNew }: HistoryViewProps) {
+  const [confirmClear, setConfirmClear] = useState(false)
   const history = loadHistory()
 
   const handleClear = () => {
-    if (window.confirm('Delete all scan history?')) {
+    if (confirmClear) {
       clearHistory()
       onBack()
+    } else {
+      setConfirmClear(true)
+      setTimeout(() => setConfirmClear(false), 3000)
     }
   }
 
@@ -63,8 +69,8 @@ export default function HistoryView({ onBack, onRunNew }: HistoryViewProps) {
 
           <div className="history-footer">
             <button className="action-btn" onClick={onRunNew}>New Scan</button>
-            <button className="action-btn" style={{ color: '#b91c1c' }} onClick={handleClear}>
-              Clear
+            <button className="action-btn" style={{ color: confirmClear ? '#b91c1c' : undefined }} onClick={handleClear}>
+              {confirmClear ? 'Tap again to clear' : 'Clear'}
             </button>
           </div>
         </>

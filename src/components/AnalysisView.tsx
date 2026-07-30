@@ -1,6 +1,6 @@
-import { useState } from 'react'
 import type { HerdStressResult } from '../pipeline/types'
 import ScoreDial from './ScoreDial'
+import { SCORE_LOW, SCORE_HIGH } from '../constants'
 
 interface AnalysisViewProps {
   result: HerdStressResult
@@ -30,19 +30,15 @@ const SUB_SCORES: { key: keyof HerdStressResult; label: string; color: string }[
 ]
 
 export default function AnalysisView({ result, onBack, onShare, onViewHistory, onViewMap }: AnalysisViewProps) {
-  const [toast, setToast] = useState('')
-  const barColor = result.score < 35 ? '#84cc16' : result.score < 65 ? '#d97706' : '#b91c1c'
+  const barColor = result.score < SCORE_LOW ? '#84cc16' : result.score < SCORE_HIGH ? '#d97706' : '#b91c1c'
   const total = result.clustering + result.motion + result.posture + result.audio
 
   const handleShare = () => {
     onShare()
-    setToast('Report shared with nearby users')
-    setTimeout(() => setToast(''), 2000)
   }
 
   return (
     <div className="screen analysis-screen">
-      {toast && <div className="toast">{toast}</div>}
 
       <button className="back-link" onClick={onBack}>&#8592; Back</button>
 

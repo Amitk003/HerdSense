@@ -1,4 +1,5 @@
-import type { FrameFeatures, HerdStressResult, ScanRecord } from './types'
+import type { FrameFeatures, HerdStressResult, ScanRecord, DetectionFrame } from './types'
+import { speciesFromClassIds } from '../constants'
 
 const CLUSTER_WEIGHT = 0.35
 const MOTION_WEIGHT = 0.25
@@ -8,7 +9,8 @@ const AUDIO_WEIGHT = 0.20
 export function calcHssi(
   features: FrameFeatures[],
   audioDistress: number,
-  history: ScanRecord[]
+  history: ScanRecord[],
+  frames?: DetectionFrame[]
 ): HerdStressResult {
   const clusteringScore = calcClusteringScore(features)
   const motionScore = calcMotionScore(features)
@@ -25,6 +27,14 @@ export function calcHssi(
   const trend = calcTrend(score, history)
   const recommendation = getRecommendation(score, trend)
 
+  const animalCount = frames && frames.length > 0
+    ? frames.reduce((max, f) => Math.max(max, f.boxes.length), 0)
+    : 0
+
+  const classIds = frames
+    ? [...new Set(frames.flatMap(f => f.boxes.map(b => b.classId)))]
+    : []
+
   return {
     score,
     clustering: Math.round(clusteringScore * 100) / 100,
@@ -33,7 +43,9 @@ export function calcHssi(
     audio: Math.round(audioScore * 100) / 100,
     trend,
     recommendation,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    animalCount,
+    species: speciesFromClassIds(classIds)
   }
 }
 

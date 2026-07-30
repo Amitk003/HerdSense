@@ -29,7 +29,9 @@ export default function HomeScreen({ onPresetSelected, onNavigateCamera, onNavig
 
     const final: HerdStressResult = {
       ...result,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      animalCount: preset.animalCount,
+      species: preset.species
     }
 
     saveRecord({
@@ -39,7 +41,7 @@ export default function HomeScreen({ onPresetSelected, onNavigateCamera, onNavig
       motion: final.motion,
       posture: final.posture,
       audio: final.audio,
-      animalCount: 15
+      animalCount: final.animalCount
     })
 
     setLoading(false)

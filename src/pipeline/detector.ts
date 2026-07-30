@@ -1,7 +1,5 @@
 import type { BoundingBox, DetectionFrame } from './types'
-
-const CONFIDENCE_THRESHOLD = 0.5
-const FRAME_SAMPLE_RATE = 3
+import { CONFIDENCE_THRESHOLD, FRAME_SAMPLE_RATE, FPS } from '../constants'
 
 export class Detector {
   private session: any = null
@@ -40,7 +38,7 @@ export class Detector {
     canvas.height = 640
 
     for (let i = 0; i < totalFrames; i += FRAME_SAMPLE_RATE) {
-      video.currentTime = i / 30
+      video.currentTime = i / FPS
       await this.waitForSeek(video)
 
       ctx.drawImage(video, 0, 0, 640, 640)
@@ -91,6 +89,7 @@ export class Detector {
           width: w,
           height: h,
           confidence: score,
+          classId,
           animalId: -1
         })
       }

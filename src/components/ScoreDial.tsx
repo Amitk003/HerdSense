@@ -1,3 +1,5 @@
+import { SCORE_LOW, SCORE_HIGH } from '../constants'
+
 interface ScoreDialProps {
   score: number
   size: number
@@ -11,9 +13,9 @@ export default function ScoreDial({ score, size }: ScoreDialProps) {
   const pct = score / 100
   const offset = circ * (1 - pct)
 
-  const arc = score < 35 ? '#84cc16' : score < 65 ? '#d97706' : '#b91c1c'
-  const num = score < 35 ? '#bef264' : score < 65 ? '#fde68a' : '#fca5a5'
-  const track = score < 35 ? '#1a2e05' : score < 65 ? '#3b2200' : '#450a0a'
+  const arc = score < SCORE_LOW ? '#84cc16' : score < SCORE_HIGH ? '#d97706' : '#b91c1c'
+  const num = score < SCORE_LOW ? '#bef264' : score < SCORE_HIGH ? '#fde68a' : '#fca5a5'
+  const track = score < SCORE_LOW ? '#1a2e05' : score < SCORE_HIGH ? '#3b2200' : '#450a0a'
 
   return (
     <svg

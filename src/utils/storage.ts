@@ -1,7 +1,7 @@
 import type { ScanRecord } from '../pipeline/types'
+import { MAX_HISTORY_RECORDS } from '../constants'
 
 const STORAGE_KEY = 'herdsense_history'
-const MAX_RECORDS = 50
 
 export function loadHistory(): ScanRecord[] {
   try {
@@ -16,7 +16,7 @@ export function saveRecord(record: ScanRecord): ScanRecord[] {
   const history = loadHistory()
   history.unshift(record)
 
-  const trimmed = history.slice(0, MAX_RECORDS)
+  const trimmed = history.slice(0, MAX_HISTORY_RECORDS)
   localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed))
   return trimmed
 }

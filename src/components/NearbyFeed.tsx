@@ -1,10 +1,11 @@
 import { useState, useMemo } from 'react'
 import type { StressReport } from '../pipeline/types'
 import { haversineKm } from '../utils/clustering'
+import { SCORE_LOW, SCORE_HIGH } from '../constants'
 
 function scoreColor(s: number): string {
-  if (s < 35) return '#84cc16'
-  if (s < 65) return '#d97706'
+  if (s < SCORE_LOW) return '#84cc16'
+  if (s < SCORE_HIGH) return '#d97706'
   return '#b91c1c'
 }
 
