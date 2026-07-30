@@ -4,7 +4,6 @@ import { SCORE_LOW, SCORE_HIGH } from '../constants'
 
 interface AnalysisViewProps {
   result: HerdStressResult
-  onBack: () => void
   onViewHistory: () => void
   onViewMap: () => void
 }
@@ -46,7 +45,7 @@ const SUB_SCORES: { key: keyof HerdStressResult; label: string }[] = [
   { key: 'audio', label: 'Audio' }
 ]
 
-export default function AnalysisView({ result, onBack, onViewHistory, onViewMap }: AnalysisViewProps) {
+export default function AnalysisView({ result, onViewHistory, onViewMap }: AnalysisViewProps) {
   return (
     <div className="screen analysis-screen">
       <div className="card">

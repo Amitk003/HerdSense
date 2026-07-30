@@ -65,7 +65,7 @@ export class Tracker {
     }
   }
 
-  private cleanupStaleTracks(currentFrame: number): void {
+  private cleanupStaleTracks(_currentFrame: number): void {
     for (const [id, gap] of this.frameGap) {
       if (gap > MAX_FRAME_GAP) {
         this.activeTracks.delete(id)

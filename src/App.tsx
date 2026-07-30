@@ -149,7 +149,6 @@ export default function App() {
       {screen === 'analysis' && result && (
         <AnalysisView
           result={result}
-          onBack={handleBackHome}
           onViewHistory={() => setScreen('history')}
           onViewMap={() => setScreen('map')}
         />
@@ -157,7 +156,6 @@ export default function App() {
       {screen === 'map' && (
         <>
           <StressMap
-            onBack={handleBackHome}
             reports={peer.reports}
             location={peer.location}
             focusedReportId={focusedReportId}

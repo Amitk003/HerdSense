@@ -69,14 +69,13 @@ function MapController({ focusedReportId, reports, onClusterAlert }: MapControll
 }
 
 interface StressMapProps {
-  onBack?: () => void
   reports?: StressReport[]
   location?: { lat: number; lng: number } | null
   focusedReportId?: string | null
   onClusterAlert?: (cluster: AlertCluster) => void
 }
 
-export default function StressMap({ onBack, reports = [], location, focusedReportId, onClusterAlert }: StressMapProps) {
+export default function StressMap({ reports = [], location, focusedReportId, onClusterAlert }: StressMapProps) {
   const [tilesLoaded, setTilesLoaded] = useState(false)
 
   const clusters: AlertCluster[] = useMemo(() => findAlertClusters(reports), [reports])
