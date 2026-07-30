@@ -9,9 +9,9 @@ export class FeatureExtractor {
   private totalDirectionChanges = 0
 
   extract(
-    video: HTMLVideoElement,
+    _video: HTMLVideoElement,
     frames: DetectionFrame[],
-    totalFrames: number
+    _totalFrames: number
   ): FrameFeatures[] {
     this.tracker.reset()
     this.prevCentroids.clear()

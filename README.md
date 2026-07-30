@@ -1,64 +1,92 @@
-# HerdSense
+# HerdSense: On-Device Livestock Intelligence Platform
 
-**Your animals are telling you something. HerdSense helps you hear it.**
-
----
-
-## What is HerdSense?
-
-HerdSense is a free web app that turns your phone into a livestock stress detector. Point your phone at your herd, record 20 seconds of video, and get a clear stress score from 0 to 100. All processing happens on your phone. No internet needed. No data plan required.
-
-It measures what your animals are already telling you:
-
-- Are they bunching together more than normal?
-- Is their walking pattern changing?
-- Are their heads drooping?
-
-These signals appear days before satellite systems detect any problem. HerdSense makes them visible and measurable.
+HerdSense is an offline-first, browser-based edge AI system that detects livestock stress signals in real time using standard mobile video streams. By processing computer vision and behavioral analysis directly on the user's device, HerdSense provides actionable herd welfare insights without requiring cloud servers, satellite delays, or hardware collars.
 
 ---
 
-## Why use HerdSense?
+## Key Capabilities
 
-**Know before satellites do.** Livestock change their behavior when forage quality drops or water becomes scarce. They bunch up. They walk differently. HerdSense measures these changes and gives you a clear score and recommendation.
+### 1. Zero Hardware Edge Intelligence
+Point any smartphone camera at your herd to capture 20 seconds of video. HerdSense executes lightweight YOLOv8 neural network inference directly inside the browser engine using ONNX Runtime Web.
 
-**No new hardware needed.** The phone in your pocket is enough. No collars. No sensors. No installation. Just open the web app.
+### 2. Multi Modal Behavioral Analysis
+Evaluates herd stress across physical signals:
+* **Inter Animal Spatial Index (IASI)**: Measures spatial dispersion and panic clustering.
+* **Gait Motion Score**: Quantifies speed variance and movement direction shifts.
+* **Posture Dynamics**: Detects head droop and body aspect ratio changes.
 
-**Works anywhere.** Analysis runs in your browser. No cell signal required after the page loads. No data plan needed. Works in the middle of nowhere.
+### 3. Serverless P2P Mesh Network
+HerdSense connects nearby pastoralists via WebRTC peer to peer data channels over localized 100km geohashes. Regional stress reports sync automatically without any centralized database or server infrastructure.
 
-**Your data stays yours.** Nothing leaves your phone unless you choose to share an anonymous summary (just a number and a rough location). No images. No video. No identity.
-
-**See what nearby herds are doing.** When others choose to share, their reports appear on your map in real time. See stress patterns across your area.
-
----
-
-## How it works
-
-1. Open the web app on your phone
-2. Point the camera at your herd and record 20 seconds
-3. The app analyzes the video using AI running on your phone
-4. You get a stress score (0 to 100) with a recommendation
-5. Optionally share with nearby users to help the whole community
+### 4. 100% Privacy & Data Sovereignty
+Raw video feeds never leave the local browser window. Analysis executes in device memory, and shared network reports contain only anonymized location coordinates and numeric scores.
 
 ---
 
-## What you get
-
-- **Stress score**: A clear number from 0 to 100. Green is healthy. Red means action needed.
-- **Trend**: Is the stress rising or falling compared to your last scan?
-- **Recommendation**: What to do next. Move to water. Release stored feed. Start migration.
-- **Regional map**: See stress levels across nearby herds in real time.
-- **History**: Track how your herd's stress changes over days and weeks.
-
----
-
-## For developers
+## System Architecture Overview
 
 ```
+Mobile Camera / Video Input
+            |
+            v
+[ 640x640 Canvas Pre-processor ]
+            |
+            v
+[ YOLOv8 Neural Network - ONNX Web ]
+            |
+            v
+[ IoU Object Tracker & NMS Deduplication ]
+            |
+            v
+[ Multi Signal Behavioral Fusion Engine ]
+            |
+            +------------------------+
+            |                        |
+            v                        v
+[ Local Indexed History ]   [ WebRTC P2P Mesh Network ]
+```
+
+---
+
+## Technical Stack
+
+* **Frontend Engine**: React 18, Vite, TypeScript
+* **Machine Learning**: ONNX Runtime Web (WASM & WebGL execution providers)
+* **Computer Vision**: YOLOv8 Nano object detection model
+* **Mesh Network**: WebRTC DataChannels (PeerJS)
+* **GIS & Mapping**: Leaflet
+* **Testing Suite**: Vitest
+
+---
+
+## Quick Start Guide
+
+### Prerequisites
+* Node.js v18.0.0 or higher
+* npm v9.0.0 or higher
+
+### Installation & Local Run
+
+```bash
+# Clone the repository
+git clone https://github.com/Amitk003/HerdSense.git
+cd HerdSense
+
+# Install dependencies
 npm install
+
+# Start local development server
 npm run dev
+
+# Run automated unit test suite
+npm test
+
+# Build production bundle
+npm run build
 ```
 
-Built with Vite + React + TypeScript + ONNX Runtime Web + Leaflet + PeerJS.
+---
 
-See the docs/ folder for architecture, setup guide, and technical decisions.
+## Production Deployment & Offline Readiness
+
+HerdSense is configured as a Progressive Web Application (PWA). Its service worker pre-caches all static assets, WebAssembly runtimes, and ONNX neural network model binaries upon first load, delivering complete functionality offline in remote environments.
