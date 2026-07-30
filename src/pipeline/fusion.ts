@@ -1,10 +1,10 @@
 import type { FrameFeatures, HerdStressResult, ScanRecord, DetectionFrame } from './types'
 import { speciesFromClassIds } from '../constants'
 
-const CLUSTER_WEIGHT = 0.35
-const MOTION_WEIGHT = 0.25
-const POSTURE_WEIGHT = 0.20
-const AUDIO_WEIGHT = 0.20
+const CLUSTER_WEIGHT = 0.40
+const MOTION_WEIGHT = 0.35
+const POSTURE_WEIGHT = 0.25
+const AUDIO_WEIGHT = 0.00
 
 export function calcHssi(
   features: FrameFeatures[],
@@ -17,11 +17,9 @@ export function calcHssi(
   const postureScore = calcPostureScore(features)
   const audioScore = Math.max(0, Math.min(1, audioDistress))
 
-  const rawScore =
-    CLUSTER_WEIGHT * clusteringScore +
-    MOTION_WEIGHT * motionScore +
-    POSTURE_WEIGHT * postureScore +
-    AUDIO_WEIGHT * audioScore
+  const rawScore = audioDistress > 0
+    ? (0.35 * clusteringScore + 0.30 * motionScore + 0.20 * postureScore + 0.15 * audioScore)
+    : (CLUSTER_WEIGHT * clusteringScore + MOTION_WEIGHT * motionScore + POSTURE_WEIGHT * postureScore)
 
   const score = Math.round(Math.max(0, Math.min(100, rawScore * 100)))
   const trend = calcTrend(score, history)
@@ -56,7 +54,8 @@ function calcClusteringScore(features: FrameFeatures[]): number {
   if (validFrames.length === 0) return 0
 
   const meanIasi = validFrames.reduce((a, b) => a + b.iasi, 0) / validFrames.length
-  const maxExpectedIasi = 500
+  // Half-diagonal of 640x640 canvas (sqrt(640^2 + 640^2) / 2 approx 452px)
+  const maxExpectedIasi = 450
   const normalizedIasi = Math.min(1, meanIasi / maxExpectedIasi)
 
   return 1 - normalizedIasi

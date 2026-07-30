@@ -26,6 +26,12 @@ function MapController({ focusedReportId, reports, onClusterAlert }: MapControll
   const [tileError, setTileError] = useState(false)
 
   useEffect(() => {
+    map.invalidateSize()
+    const timer = setTimeout(() => map.invalidateSize(), 250)
+    return () => clearTimeout(timer)
+  }, [map])
+
+  useEffect(() => {
     const timeout = setTimeout(() => setTileError(true), 8000)
     map.on('tileload', () => setTileError(false))
     return () => clearTimeout(timeout)

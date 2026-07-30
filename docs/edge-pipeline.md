@@ -1,63 +1,65 @@
 # Edge Pipeline
 
-The ML pipeline runs entirely in the browser using ONNX Runtime Web. This document explains each stage.
+The machine learning pipeline runs entirely in your web browser using ONNX Runtime Web. This document explains each stage in simple language.
 
-## Detection (YOLOv8-Nano)
+## 1. Animal Detection (YOLOv8)
 
-Input: Video frame (1920x1080, resized to 640x640)
-Output: Bounding boxes for detected animals
+Input: Video frame (resized to 640x640 pixels).
+Output: Bounding boxes around detected livestock.
 
-The model is YOLOv8-Nano trained on COCO dataset. We filter for livestock classes only:
+The system uses a light YOLOv8 model. It filters for livestock animals:
 
 | Class ID | Animal |
-|----------|--------|
+|---|---|
+| 16 | Dog / Guard Dog |
+| 17 | Horse |
+| 18 | Sheep |
 | 19 | Cattle |
-| 20 | Sheep |
+| 20 | Cattle / Buffalo |
 | 21 | Goat |
 | 22 | Horse |
 | 23 | Camel |
 | 24 | Donkey |
 
-The model runs on every 3rd frame to balance accuracy and speed. Each frame takes about 200ms on a mid-range phone.
+The model samples 2 frames per second (every 15th video frame at 30fps). This balances detection speed and battery usage.
 
-## Tracking (ByteTrack)
+### Non Maximum Suppression (NMS)
 
-Input: Bounding boxes from current frame + track history from previous frames
-Output: Tracked animals with consistent IDs
+Raw YOLOv8 detection outputs many overlapping bounding box candidates per frame. The detector runs Non Maximum Suppression with an IoU threshold of 0.45. This removes duplicate boxes so each animal is counted once.
 
-ByteTrack works by:
-1. Predicting each tracked animal's position using constant velocity model
-2. Matching predictions to detections using IoU (Intersection over Union)
-3. Creating new tracks for unmatched detections
-4. Removing tracks that have been missing for more than 30 frames
+## 2. Tracking (IoU Tracker)
 
-Tracking is reset for each new video recording.
+Input: Bounding boxes from the current frame and track history from previous frames.
+Output: Animals assigned persistent tracking IDs.
 
-## Feature Extraction (FeatureExtractor)
+The tracker matches detections across frames:
+1. Calculates Intersection over Union (IoU) overlap between frame detections.
+2. Assigns existing animal IDs to matching bounding boxes.
+3. Creates new IDs for newly detected animals.
 
-Input: Tracked animals across all frames
-Output: Three feature values
+## 3. Feature Extraction
 
-### IASI (Inter-Animal Spacing Index)
-Average pairwise distance between all animal centroids in each frame. A low IASI means animals are bunched together, which is a stress signal.
+Input: Tracked animals across all sampled frames.
+Output: Three core physical movement metrics.
+
+### Inter Animal Spatial Index (IASI)
+Calculates the average distance between all animal center points in a frame. When animals bunch together closely, the distance drops, indicating herd stress or crowding.
 
 ### Motion Score
-Average speed and direction changes of each animal across frames. Erratic movement indicates stress. Calculated from centroid displacement vectors.
+Calculates animal speed variance and direction change frequency. Rapid, erratic movement indicates restlessness or distress.
 
 ### Posture Score
-Variance in bounding box aspect ratios. Drooping heads change the box shape (less tall relative to wide). Lower variance = more uniform posture.
+Measures changes in bounding box aspect ratio over time. Head droop or changes in posture alter the width-to-height ratio.
 
-## Fusion (calcHssi)
+## 4. Stress Score Fusion
 
-Input: IASI, motion score, posture score, audio value
-Output: Stress score (0 to 100)
+Input: Spatial clustering score, motion score, posture score.
+Output: Herd Stress Score (0 to 100).
 
 ```typescript
-score = (1 - iasi) * 0.35 + motion * 0.25 + posture * 0.20 + audio * 0.20
+rawScore = (clustering * 0.40) + (motion * 0.35) + (posture * 0.25)
+score = Math.round(rawScore * 100)
 ```
 
-Each component is normalized to 0-1 before combining. The result is mapped to 0-100.
+Visual metrics drive 100% of the score when no external audio data is provided. When audio distress signals are present, audio is factored into the calculation.
 
-## Audio
-
-Audio input is a numeric slider (0 to 10) for the current demo. This placeholder exists because real audio classification is planned. The slider represents distress call intensity.
