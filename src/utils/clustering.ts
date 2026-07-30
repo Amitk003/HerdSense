@@ -46,3 +46,51 @@ export function findClusters<T extends { lat: number; lng: number }>(
 
   return clusters
 }
+
+import type { StressReport, AlertCluster } from '../pipeline/types'
+
+export function findAlertClusters(
+  reports: StressReport[],
+  radiusKm = 15,
+  minHerds = 3,
+  scoreThreshold = 60
+): AlertCluster[] {
+  const highStress = reports.filter(r => r.score > scoreThreshold)
+  const clusters: AlertCluster[] = []
+  const assigned = new Set<string>()
+
+  for (let i = 0; i < highStress.length; i++) {
+    if (assigned.has(highStress[i].id)) continue
+    const memberIds = new Set<string>()
+    memberIds.add(highStress[i].id)
+
+    for (let j = i + 1; j < highStress.length; j++) {
+      if (assigned.has(highStress[j].id)) continue
+      const dist = haversineKm(
+        highStress[i].lat, highStress[i].lng,
+        highStress[j].lat, highStress[j].lng
+      )
+      if (dist <= radiusKm) {
+        memberIds.add(highStress[j].id)
+      }
+    }
+
+    if (memberIds.size >= minHerds) {
+      const members = highStress.filter(r => memberIds.has(r.id))
+      for (const id of memberIds) assigned.add(id)
+      clusters.push({
+        center: {
+          lat: members.reduce((a, c) => a + c.lat, 0) / members.length,
+          lng: members.reduce((a, c) => a + c.lng, 0) / members.length
+        },
+        avgScore: Math.round(members.reduce((a, c) => a + c.score, 0) / members.length),
+        herdCount: members.length,
+        radiusKm,
+        triggeredAt: new Date().toISOString(),
+        members
+      })
+    }
+  }
+
+  return clusters
+}

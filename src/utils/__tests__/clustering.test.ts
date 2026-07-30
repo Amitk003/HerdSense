@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { haversineKm, findClusters } from '../clustering'
+import { haversineKm, findClusters, findAlertClusters } from '../clustering'
 
 describe('haversineKm', () => {
   it('returns zero for same point', () => {
@@ -34,5 +34,52 @@ describe('findClusters', () => {
     const clusters = findClusters(points, 15, 2)
     expect(clusters.length).toBe(1)
     expect(clusters[0].length).toBeGreaterThanOrEqual(3)
+  })
+})
+
+describe('findAlertClusters', () => {
+  const makeReport = (id: string, lat: number, lng: number, score: number) => ({
+    id,
+    lat,
+    lng,
+    score,
+    animalCount: 10,
+    species: 'cattle',
+    timestamp: '2026-07-30T12:00:00Z'
+  })
+
+  it('returns empty for no reports', () => {
+    expect(findAlertClusters([])).toEqual([])
+  })
+
+  it('returns empty when reports have low scores', () => {
+    const reports = [
+      makeReport('a', 3.5, 38.5, 30),
+      makeReport('b', 3.51, 38.51, 40),
+      makeReport('c', 3.52, 38.52, 50)
+    ]
+    expect(findAlertClusters(reports)).toEqual([])
+  })
+
+  it('creates cluster for nearby high-stress reports', () => {
+    const reports = [
+      makeReport('a', 3.5, 38.5, 80),
+      makeReport('b', 3.51, 38.51, 75),
+      makeReport('c', 3.52, 38.52, 70)
+    ]
+    const clusters = findAlertClusters(reports)
+    expect(clusters.length).toBe(1)
+    expect(clusters[0].herdCount).toBe(3)
+    expect(clusters[0].avgScore).toBeGreaterThan(70)
+  })
+
+  it('does not cluster far apart reports', () => {
+    const reports = [
+      makeReport('a', 3.5, 38.5, 80),
+      makeReport('b', 10.0, 50.0, 85),
+      makeReport('c', 3.52, 38.52, 75)
+    ]
+    const clusters = findAlertClusters(reports)
+    expect(clusters.length).toBe(0)
   })
 })
