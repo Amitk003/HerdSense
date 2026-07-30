@@ -1,5 +1,5 @@
 import type { HerdStressResult } from '../pipeline/types'
-import ScoreDial from './ScoreDial'
+import ScoreBadge from './ScoreDial'
 import { SCORE_LOW, SCORE_HIGH } from '../constants'
 
 interface AnalysisViewProps {
@@ -52,7 +52,7 @@ export default function AnalysisView({ result, onBack, onShare, onViewHistory, o
     <div className="screen analysis-screen">
       <div className="card">
         <div className="analysis-hero">
-          <ScoreDial score={result.score} size={160} />
+          <ScoreBadge score={result.score} />
           <p className="analysis-context"><ScoreContext score={result.score} /></p>
           <div className="analysis-hero-meta">
             <span className="analysis-hero-meta-item">

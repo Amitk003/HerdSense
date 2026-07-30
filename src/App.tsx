@@ -95,14 +95,7 @@ export default function App() {
     <div className="app">
       <header className="app-header">
         <div className="app-header-left">
-          <span className="app-header-brand">
-            <span className="app-header-brand-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--success)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-              </svg>
-            </span>
-            HerdSense
-          </span>
+          <span className="app-header-brand">HerdSense</span>
           <span className="app-header-status">
             <span className={`status-dot ${st.dot}`} />
             {st.label}
@@ -136,7 +129,6 @@ export default function App() {
 
       {screen === 'home' && (
         <HomeScreen
-          onPresetSelected={handleAnalysisComplete}
           onNavigateCamera={() => setScreen('camera')}
           onNavigateMap={() => setScreen('map')}
           onNavigateHistory={() => setScreen('history')}

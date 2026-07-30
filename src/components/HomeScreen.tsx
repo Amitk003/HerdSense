@@ -1,54 +1,17 @@
 import { useState } from 'react'
-import { DEMO_PRESETS } from '../data/presets'
-import { calcHssi } from '../pipeline/fusion'
-import { saveRecord, loadHistory } from '../utils/storage'
-import type { HerdStressResult, DemoPreset, FrameFeatures } from '../pipeline/types'
-import ScoreDial from './ScoreDial'
+import { loadHistory } from '../utils/storage'
+import ScoreBadge from './ScoreDial'
 
 interface HomeScreenProps {
-  onPresetSelected: (result: HerdStressResult) => void
   onNavigateCamera: () => void
   onNavigateMap: () => void
   onNavigateHistory: () => void
 }
 
-export default function HomeScreen({ onPresetSelected, onNavigateCamera, onNavigateMap, onNavigateHistory }: HomeScreenProps) {
-  const [loading, setLoading] = useState(false)
-  const [showDemo, setShowDemo] = useState(false)
+export default function HomeScreen({ onNavigateCamera, onNavigateMap, onNavigateHistory }: HomeScreenProps) {
+  const [loading] = useState(false)
   const history = loadHistory()
   const lastScore = history.length > 0 ? history[0].score : null
-
-  const handlePreset = async (preset: DemoPreset) => {
-    setLoading(true)
-    setShowDemo(false)
-
-    const h = loadHistory()
-    const result = calcHssi(
-      [] as FrameFeatures[],
-      preset.precomputedSubscores.audio,
-      h
-    )
-
-    const final: HerdStressResult = {
-      ...result,
-      timestamp: new Date().toISOString(),
-      animalCount: preset.animalCount,
-      species: preset.species
-    }
-
-    saveRecord({
-      timestamp: final.timestamp,
-      score: final.score,
-      clustering: final.clustering,
-      motion: final.motion,
-      posture: final.posture,
-      audio: final.audio,
-      animalCount: final.animalCount
-    })
-
-    setLoading(false)
-    onPresetSelected(final)
-  }
 
   return (
     <div className="screen home-screen">
@@ -85,33 +48,10 @@ export default function HomeScreen({ onPresetSelected, onNavigateCamera, onNavig
         <div className="card last-scan-card" onClick={onNavigateHistory}>
           <span className="last-scan-label">Last scan</span>
           <div className="last-scan-score">
-            <ScoreDial score={lastScore} size={40} />
+            <ScoreBadge score={lastScore} size="xs" />
           </div>
         </div>
       )}
-
-      <div className="demo-trigger">
-        <button className="demo-btn" onClick={() => setShowDemo(!showDemo)}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <polygon points="5 3 19 12 5 21 5 3" />
-          </svg>
-          Demo
-        </button>
-        {showDemo && (
-          <div className="demo-panel">
-            {DEMO_PRESETS.map(p => {
-              const colors: Record<string, string> = { healthy: 'var(--success)', 'early-stress': 'var(--warning)', critical: 'var(--danger)' }
-              return (
-                <button key={p.id} className="demo-opt" onClick={() => handlePreset(p)}>
-                  <span className="demo-opt-score" style={{ color: colors[p.id] }}>{p.precomputedScore}</span>
-                  <span className="demo-opt-label">{p.label}</span>
-                  <span className="demo-opt-arrow">&rarr;</span>
-                </button>
-              )
-            })}
-          </div>
-        )}
-      </div>
 
       <div className="home-nav">
         <div className="card" onClick={onNavigateHistory}>
