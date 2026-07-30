@@ -24,6 +24,7 @@ export default function CameraView({ onComplete, onBack, startInUpload }: Camera
   const recorderRef = useRef<MediaRecorder | null>(null)
   const chunksRef = useRef<Blob[]>([])
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (startInUpload) return
@@ -102,25 +103,26 @@ export default function CameraView({ onComplete, onBack, startInUpload }: Camera
     }
   }
 
-  async function processRecording() {
-    stopCamera()
+  async function processVideo(url: string) {
     setStatus('processing')
 
-    const blob = new Blob(chunksRef.current, { type: 'video/webm' })
-    const url = URL.createObjectURL(blob)
-
     const video = document.createElement('video')
-    video.src = url
     video.muted = true
+    video.playsInline = true
 
     try {
       await new Promise<void>((resolve, reject) => {
         video.onloadedmetadata = () => resolve()
-        video.onerror = () => reject(new Error('Failed to load recorded video'))
+        video.onerror = () => reject(new Error('Failed to load video'))
+        video.src = url
         video.load()
       })
 
       const duration = video.duration
+      if (!duration || duration <= 0) {
+        throw new Error('Video has no duration')
+      }
+
       const totalFrames = Math.floor(duration * FPS)
 
       const detector = new Detector()
@@ -129,7 +131,7 @@ export default function CameraView({ onComplete, onBack, startInUpload }: Camera
       const frames: DetectionFrame[] = await detector.detectFrames(video, totalFrames)
 
       if (frames.length === 0) {
-        setError('No animals detected in the video. Try recording again.')
+        setError('No animals detected in the video.')
         setStatus('error')
         URL.revokeObjectURL(url)
         return
@@ -160,76 +162,40 @@ export default function CameraView({ onComplete, onBack, startInUpload }: Camera
       onComplete(final)
     } catch (err) {
       console.error('Processing failed:', err)
-      setError('Processing failed. Try recording again with better lighting.')
+      setError('Processing failed. Try a different video file.')
       setStatus('error')
       URL.revokeObjectURL(url)
     }
+  }
+
+  async function processRecording() {
+    stopCamera()
+    const blob = new Blob(chunksRef.current, { type: 'video/webm' })
+    const url = URL.createObjectURL(blob)
+    await processVideo(url)
   }
 
   function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
 
-    setStatus('processing')
-    const url = URL.createObjectURL(file)
-    const video = document.createElement('video')
-    video.src = url
-    video.muted = true
-
-    video.onloadedmetadata = async () => {
-      const duration = video.duration
-      const totalFrames = Math.floor(duration * FPS)
-
-      try {
-        const detector = new Detector()
-        await detector.loadModel('/models/yolov8n.onnx')
-
-        const frames: DetectionFrame[] = await detector.detectFrames(video, totalFrames)
-
-        if (frames.length === 0) {
-          setError('No animals detected in the video.')
-          setStatus('error')
-          URL.revokeObjectURL(url)
-          return
-        }
-
-        const extractor = new FeatureExtractor()
-        const features = extractor.extract(video, frames, totalFrames)
-
-        const history = loadHistory()
-        const result = calcHssi(features, 0, history, frames)
-
-        const final: HerdStressResult = {
-          ...result,
-          timestamp: new Date().toISOString()
-        }
-
-        saveRecord({
-          timestamp: final.timestamp,
-          score: final.score,
-          clustering: final.clustering,
-          motion: final.motion,
-          posture: final.posture,
-          audio: final.audio,
-          animalCount: final.animalCount
-        })
-
-        URL.revokeObjectURL(url)
-        onComplete(final)
-      } catch (err) {
-        console.error('Processing failed:', err)
-        setError('Processing failed. Try a different video file.')
-        setStatus('error')
-        URL.revokeObjectURL(url)
-      }
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
     }
+
+    const url = URL.createObjectURL(file)
+    processVideo(url)
   }
 
   function handleRetry() {
     setError('')
-    setStatus('preparing')
-    chunksRef.current = []
-    startCamera()
+    if (startInUpload) {
+      setStatus('ready')
+    } else {
+      setStatus('preparing')
+      chunksRef.current = []
+      startCamera()
+    }
   }
 
   return (
@@ -241,7 +207,7 @@ export default function CameraView({ onComplete, onBack, startInUpload }: Camera
 
       {status === 'processing' ? (
         <div className="camera-body">
-          <div className="processing-indicator">
+          <div className="processing-indicator" style={{ flex: 1, justifyContent: 'center' }}>
             <div className="spinner" />
             <p>Analyzing video...</p>
           </div>
@@ -261,12 +227,19 @@ export default function CameraView({ onComplete, onBack, startInUpload }: Camera
             <label className="upload-btn">
               Choose Video File
               <input
+                ref={fileInputRef}
                 type="file"
                 accept="video/*"
                 onChange={handleFileUpload}
                 style={{ display: 'none' }}
               />
             </label>
+            {status === 'error' && (
+              <div className="error-card" style={{ marginTop: 16, width: '100%' }}>
+                <p>{error}</p>
+                <button className="action-btn" onClick={handleRetry}>Try Again</button>
+              </div>
+            )}
           </div>
         </div>
       ) : (
