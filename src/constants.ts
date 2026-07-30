@@ -36,5 +36,5 @@ export function speciesFromClassIds(classIds: number[]): string {
   for (const [name, count] of Object.entries(counts)) {
     if (count > bestCount) { best = name; bestCount = count }
   }
-  return bestCount > 0 ? best : 'cattle'
+  return bestCount > 0 ? best : 'livestock'
 }
