@@ -132,9 +132,9 @@ export default function StressMap({ onBack, reports = [], location, focusedRepor
               </Tooltip>
             </CircleMarker>
           ))}
-          {clusters.map((c, i) => (
+          {clusters.map((c) => (
             <Circle
-              key={i}
+              key={`cluster-${c.center.lat.toFixed(3)}-${c.center.lng.toFixed(3)}-${c.herdCount}`}
               center={[c.center.lat, c.center.lng]}
               radius={c.radiusKm * 1000}
               pathOptions={{
@@ -181,7 +181,7 @@ export default function StressMap({ onBack, reports = [], location, focusedRepor
           <h3 className="alert-section-title">Active alerts</h3>
           <div className="alert-cards">
             {clusters.map((c, i) => (
-              <div key={i} className="alert-card">
+              <div key={`alert-${c.center.lat.toFixed(3)}-${c.center.lng.toFixed(3)}-${c.herdCount}`} className="alert-card">
                 <div className="alert-card-header">
                   <span className="alert-tag">Alert #{i + 1}</span>
                   <span className="alert-meta">{c.herdCount} herds</span>

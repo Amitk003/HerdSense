@@ -46,7 +46,13 @@ export default function HomeScreen({ onNavigateCamera, onNavigateUpload, onNavig
       </div>
 
       {lastScore !== null && (
-        <div className="card last-scan-card" onClick={onNavigateHistory}>
+        <div
+          className="card last-scan-card"
+          role="button"
+          tabIndex={0}
+          onClick={onNavigateHistory}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onNavigateHistory() }}
+        >
           <span className="last-scan-label">Last scan</span>
           <div className="last-scan-score">
             <ScoreBadge score={lastScore} size="xs" />
@@ -55,14 +61,26 @@ export default function HomeScreen({ onNavigateCamera, onNavigateUpload, onNavig
       )}
 
       <div className="home-nav">
-        <div className="card" onClick={onNavigateHistory}>
+        <div
+          className="card"
+          role="button"
+          tabIndex={0}
+          onClick={onNavigateHistory}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onNavigateHistory() }}
+        >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block', margin: '0 auto 6px' }}>
             <circle cx="12" cy="12" r="10" />
             <polyline points="12 6 12 12 16 14" />
           </svg>
           History
         </div>
-        <div className="card" onClick={onNavigateMap}>
+        <div
+          className="card"
+          role="button"
+          tabIndex={0}
+          onClick={onNavigateMap}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onNavigateMap() }}
+        >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block', margin: '0 auto 6px' }}>
             <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" />
             <line x1="8" y1="2" x2="8" y2="18" />
