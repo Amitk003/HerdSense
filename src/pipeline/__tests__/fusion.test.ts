@@ -15,9 +15,24 @@ describe('calcHssi', () => {
       {
         frameIndex: 0,
         iasi: 50,
-        centroids: [],
+        centroids: [
+          { x: 0, y: 0, animalId: 1 },
+          { x: 20, y: 20, animalId: 2 },
+          { x: 30, y: 30, animalId: 3 }
+        ],
         speedStats: { meanSpeed: 10, speedVariance: 80, directionChangeFreq: 0.8 },
         aspectRatios: [1.5, 0.8, 1.2, 0.9]
+      },
+      {
+        frameIndex: 3,
+        iasi: 40,
+        centroids: [
+          { x: 0, y: 0, animalId: 1 },
+          { x: 25, y: 25, animalId: 2 },
+          { x: 35, y: 35, animalId: 3 }
+        ],
+        speedStats: { meanSpeed: 12, speedVariance: 90, directionChangeFreq: 0.7 },
+        aspectRatios: [2.0, 0.5, 1.8, 0.5]
       }
     ]
     const result = calcHssi(features, 0.9, [])

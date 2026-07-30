@@ -15,7 +15,7 @@ describe('FeatureExtractor', () => {
     ]
     const result = extractor.extract(null as any, frames, 1)
     expect(result.length).toBe(1)
-    expect(result[0].iasi).toBe(1)
+    expect(result[0].iasi).toBe(0)
     expect(result[0].speedStats).toBeNull()
     expect(result[0].aspectRatios).toEqual([])
   })

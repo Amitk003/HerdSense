@@ -110,10 +110,15 @@ export default function CameraView({ onComplete, onBack, startInUpload }: Camera
     video.muted = true
     video.playsInline = true
 
+    const container = document.createElement('div')
+    container.hidden = true
+    container.appendChild(video)
+    document.body.appendChild(container)
+
     try {
       await new Promise<void>((resolve, reject) => {
         video.onloadedmetadata = () => resolve()
-        video.onerror = () => reject(new Error('Failed to load video'))
+        video.onerror = () => reject(new Error('Video failed to load - may be unsupported format'))
         video.src = url
         video.load()
       })
@@ -129,8 +134,8 @@ export default function CameraView({ onComplete, onBack, startInUpload }: Camera
       try {
         detector = new Detector()
         await detector.loadModel('/models/yolov8n.onnx')
-      } catch {
-        throw new Error('AI model failed to load. The app needs WebGL support.')
+      } catch (e) {
+        throw new Error('AI model failed: ' + (e instanceof Error ? e.message : 'WebGL not supported'))
       }
 
       const frames: DetectionFrame[] = await detector.detectFrames(video, totalFrames)
@@ -139,6 +144,7 @@ export default function CameraView({ onComplete, onBack, startInUpload }: Camera
         setError('No animals detected in the video.')
         setStatus('error')
         URL.revokeObjectURL(url)
+        container.remove()
         return
       }
 
@@ -164,12 +170,15 @@ export default function CameraView({ onComplete, onBack, startInUpload }: Camera
       })
 
       URL.revokeObjectURL(url)
+      container.remove()
       onComplete(final)
     } catch (err) {
-      console.error('Processing failed:', err)
-      setError('Processing failed. Try a different video file.')
+      const msg = err instanceof Error ? err.message : 'Unknown error'
+      console.error('Processing failed:', msg)
+      setError(msg)
       setStatus('error')
       URL.revokeObjectURL(url)
+      container.remove()
     }
   }
 

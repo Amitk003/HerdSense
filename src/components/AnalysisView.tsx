@@ -13,17 +13,17 @@ interface AnalysisViewProps {
 function TrendDisplay({ trend }: { trend: string }) {
   if (trend === 'improving') return (
     <span style={{ color: 'var(--success)' }}>
-      &#8595; Falling &mdash; stress dropping, herd recovering
+      &#8595; Falling - stress dropping, herd recovering
     </span>
   )
   if (trend === 'escalating') return (
     <span style={{ color: 'var(--danger)' }}>
-      &#8593; Rising &mdash; stress increasing, watch closely
+      &#8593; Rising - stress increasing, watch closely
     </span>
   )
   return (
     <span style={{ color: 'var(--warning)' }}>
-      &#8594; Stable &mdash; no significant change
+      &#8594; Stable - no significant change
     </span>
   )
 }

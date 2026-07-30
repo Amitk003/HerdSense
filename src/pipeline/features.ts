@@ -4,7 +4,9 @@ import { Tracker } from './tracker'
 export class FeatureExtractor {
   private tracker = new Tracker()
   private prevCentroids: Map<number, { x: number; y: number }> = new Map()
-  private displacements: { speed: number; angle: number }[] = []
+  private prevAngles: Map<number, number> = new Map()
+  private totalDisplacements = 0
+  private totalDirectionChanges = 0
 
   extract(
     video: HTMLVideoElement,
@@ -13,7 +15,9 @@ export class FeatureExtractor {
   ): FrameFeatures[] {
     this.tracker.reset()
     this.prevCentroids.clear()
-    this.displacements = []
+    this.prevAngles.clear()
+    this.totalDisplacements = 0
+    this.totalDirectionChanges = 0
 
     const centroidsByFrame = this.tracker.trackAcrossFrames(frames)
     const featureFrames: FrameFeatures[] = []
@@ -41,7 +45,7 @@ export class FeatureExtractor {
   }
 
   private calcIasi(centroids: Centroid[]): number {
-    if (centroids.length < 2) return 1
+    if (centroids.length < 2) return 0
 
     let totalDist = 0
     let pairs = 0
@@ -55,13 +59,12 @@ export class FeatureExtractor {
       }
     }
 
-    return pairs > 0 ? totalDist / pairs : 1
+    return pairs > 0 ? totalDist / pairs : 0
   }
 
   private calcSpeedStats(centroids: Centroid[]): SpeedStats | null {
     const currentMap = new Map(centroids.map(c => [c.animalId, { x: c.x, y: c.y }]))
     const speeds: number[] = []
-    const angles: number[] = []
 
     for (const [id, curr] of currentMap) {
       const prev = this.prevCentroids.get(id)
@@ -73,9 +76,16 @@ export class FeatureExtractor {
       const angle = Math.atan2(dy, dx)
 
       speeds.push(speed)
-      angles.push(angle)
 
-      this.displacements.push({ speed, angle })
+      const prevAngle = this.prevAngles.get(id)
+      if (prevAngle !== undefined) {
+        const angleDiff = Math.abs(angle - prevAngle)
+        if (angleDiff > Math.PI / 4) {
+          this.totalDirectionChanges++
+        }
+      }
+      this.prevAngles.set(id, angle)
+      this.totalDisplacements++
     }
 
     this.prevCentroids = currentMap
@@ -85,23 +95,11 @@ export class FeatureExtractor {
     const meanSpeed = speeds.reduce((a, b) => a + b, 0) / speeds.length
     const speedVariance = speeds.reduce((sum, s) => sum + (s - meanSpeed) ** 2, 0) / speeds.length
 
-    let dirChanges = 0
-    if (this.displacements.length >= 2) {
-      for (let i = 1; i < this.displacements.length; i++) {
-        const angleDiff = Math.abs(
-          this.displacements[i].angle - this.displacements[i - 1].angle
-        )
-        if (angleDiff > Math.PI / 4) {
-          dirChanges++
-        }
-      }
-    }
-
     return {
       meanSpeed,
       speedVariance,
-      directionChangeFreq: this.displacements.length > 0
-        ? dirChanges / this.displacements.length
+      directionChangeFreq: this.totalDisplacements > 0
+        ? this.totalDirectionChanges / this.totalDisplacements
         : 0
     }
   }
@@ -109,6 +107,8 @@ export class FeatureExtractor {
   reset(): void {
     this.tracker.reset()
     this.prevCentroids.clear()
-    this.displacements = []
+    this.prevAngles.clear()
+    this.totalDisplacements = 0
+    this.totalDirectionChanges = 0
   }
 }

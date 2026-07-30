@@ -52,10 +52,10 @@ export function calcHssi(
 function calcClusteringScore(features: FrameFeatures[]): number {
   if (features.length === 0) return 0
 
-  const iasiValues = features.filter(f => f.iasi > 0).map(f => f.iasi)
-  if (iasiValues.length === 0) return 0
+  const validFrames = features.filter(f => f.centroids && f.centroids.length >= 2 && f.iasi > 0)
+  if (validFrames.length === 0) return 0
 
-  const meanIasi = iasiValues.reduce((a, b) => a + b, 0) / iasiValues.length
+  const meanIasi = validFrames.reduce((a, b) => a + b.iasi, 0) / validFrames.length
   const maxExpectedIasi = 500
   const normalizedIasi = Math.min(1, meanIasi / maxExpectedIasi)
 
@@ -79,13 +79,38 @@ function calcMotionScore(features: FrameFeatures[]): number {
 }
 
 function calcPostureScore(features: FrameFeatures[]): number {
-  const ratios = features.flatMap(f => f.aspectRatios)
-  if (ratios.length < 3) return 0
+  const animalRatios: Map<number, number[]> = new Map()
 
-  const mean = ratios.reduce((a, b) => a + b, 0) / ratios.length
-  const variance = ratios.reduce((sum, r) => sum + (r - mean) ** 2, 0) / ratios.length
+  for (const f of features) {
+    for (let i = 0; i < f.centroids.length; i++) {
+      const id = f.centroids[i].animalId
+      const ratio = f.aspectRatios[i]
+      if (ratio && ratio > 0) {
+        if (!animalRatios.has(id)) animalRatios.set(id, [])
+        animalRatios.get(id)!.push(ratio)
+      }
+    }
+  }
 
-  return Math.min(1, variance * 10)
+  const variances: number[] = []
+  for (const ratios of animalRatios.values()) {
+    if (ratios.length >= 2) {
+      const mean = ratios.reduce((a, b) => a + b, 0) / ratios.length
+      const variance = ratios.reduce((sum, r) => sum + (r - mean) ** 2, 0) / ratios.length
+      variances.push(variance)
+    }
+  }
+
+  if (variances.length === 0) {
+    const ratios = features.flatMap(f => f.aspectRatios)
+    if (ratios.length < 3) return 0
+    const mean = ratios.reduce((a, b) => a + b, 0) / ratios.length
+    const variance = ratios.reduce((sum, r) => sum + (r - mean) ** 2, 0) / ratios.length
+    return Math.min(1, variance * 5)
+  }
+
+  const meanAnimalVariance = variances.reduce((a, b) => a + b, 0) / variances.length
+  return Math.min(1, meanAnimalVariance * 10)
 }
 
 function calcTrend(currentScore: number, history: ScanRecord[]): 'improving' | 'stable' | 'escalating' {
