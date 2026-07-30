@@ -58,6 +58,8 @@ export class Detector {
       })
     }
 
+    const totalDetections = frames.reduce((s, f) => s + f.boxes.length, 0)
+    console.log('[HerdSense] detectFrames:', frames.length, 'frames,', totalDetections, 'total detections after threshold')
     return frames
   }
 
@@ -81,6 +83,8 @@ export class Detector {
     const dims: number[] = output.dims || []
     const boxes: BoundingBox[] = []
     const validClassIds = new Set([19, 20, 21, 22, 23, 24])
+
+    console.log('[HerdSense] Model output dims:', dims, 'data length:', data.length)
 
     if (dims.length === 3) {
       const [, d1, d2] = dims
@@ -223,6 +227,7 @@ export class Detector {
       }
     }
 
+    console.log('[HerdSense] parseOutput found', boxes.length, 'animal detections')
     return boxes
   }
 

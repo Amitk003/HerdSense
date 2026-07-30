@@ -4,9 +4,9 @@ import { haversineKm } from '../utils/clustering'
 import { SCORE_LOW, SCORE_HIGH } from '../constants'
 
 function scoreColor(s: number): string {
-  if (s < SCORE_LOW) return '#84cc16'
-  if (s < SCORE_HIGH) return '#d97706'
-  return '#b91c1c'
+  if (s < SCORE_LOW) return 'var(--success)'
+  if (s < SCORE_HIGH) return 'var(--warning)'
+  return 'var(--danger)'
 }
 
 function timeAgo(ts: string): string {

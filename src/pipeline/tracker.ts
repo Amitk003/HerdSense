@@ -44,7 +44,7 @@ export class Tracker {
         }
       }
 
-      if (bestMatch > 0) {
+      if (bestMatch !== -1) {
         box.animalId = bestMatch
         this.activeTracks.set(bestMatch, box)
         this.frameGap.set(bestMatch, 0)

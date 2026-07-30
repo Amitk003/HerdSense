@@ -27,15 +27,17 @@ export function findClusters<T extends { lat: number; lng: number }>(
     const cluster: T[] = [points[i]]
     assigned.add(i)
 
-    for (let j = i + 1; j < points.length; j++) {
-      if (assigned.has(j)) continue
-      const dist = haversineKm(
-        points[i].lat, points[i].lng,
-        points[j].lat, points[j].lng
-      )
-      if (dist <= radiusKm) {
-        cluster.push(points[j])
-        assigned.add(j)
+    let changed = true
+    while (changed) {
+      changed = false
+      for (let j = 0; j < points.length; j++) {
+        if (assigned.has(j)) continue
+        const reachesCluster = cluster.some(m => haversineKm(m.lat, m.lng, points[j].lat, points[j].lng) <= radiusKm)
+        if (reachesCluster) {
+          cluster.push(points[j])
+          assigned.add(j)
+          changed = true
+        }
       }
     }
 
@@ -63,21 +65,27 @@ export function findAlertClusters(
     if (assigned.has(highStress[i].id)) continue
     const memberIds = new Set<string>()
     memberIds.add(highStress[i].id)
+    assigned.add(highStress[i].id)
 
-    for (let j = i + 1; j < highStress.length; j++) {
-      if (assigned.has(highStress[j].id)) continue
-      const dist = haversineKm(
-        highStress[i].lat, highStress[i].lng,
-        highStress[j].lat, highStress[j].lng
-      )
-      if (dist <= radiusKm) {
-        memberIds.add(highStress[j].id)
+    let changed = true
+    while (changed) {
+      changed = false
+      for (let j = 0; j < highStress.length; j++) {
+        if (assigned.has(highStress[j].id)) continue
+        const reachesCluster = [...memberIds].some(id => {
+          const m = highStress.find(r => r.id === id)
+          return m && haversineKm(m.lat, m.lng, highStress[j].lat, highStress[j].lng) <= radiusKm
+        })
+        if (reachesCluster) {
+          memberIds.add(highStress[j].id)
+          assigned.add(highStress[j].id)
+          changed = true
+        }
       }
     }
 
     if (memberIds.size >= minHerds) {
       const members = highStress.filter(r => memberIds.has(r.id))
-      for (const id of memberIds) assigned.add(id)
       clusters.push({
         center: {
           lat: members.reduce((a, c) => a + c.lat, 0) / members.length,

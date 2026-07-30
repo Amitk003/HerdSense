@@ -7,7 +7,7 @@ export const CLUSTER_RADIUS_KM = 15
 export const CLUSTER_MIN_HERDS = 3
 export const CLUSTER_SCORE_THRESHOLD = 60
 
-export const CONFIDENCE_THRESHOLD = 0.5
+export const CONFIDENCE_THRESHOLD = 0.25
 export const FRAME_SAMPLE_RATE = 3
 
 export const MAX_CACHED_REPORTS = 50

@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { loadHistory } from '../utils/storage'
 import ScoreBadge from './ScoreDial'
 
@@ -10,18 +9,11 @@ interface HomeScreenProps {
 }
 
 export default function HomeScreen({ onNavigateCamera, onNavigateUpload, onNavigateMap, onNavigateHistory }: HomeScreenProps) {
-  const [loading] = useState(false)
   const history = loadHistory()
   const lastScore = history.length > 0 ? history[0].score : null
 
   return (
     <div className="screen home-screen">
-      {loading && (
-        <div className="loading-overlay">
-          <div className="spinner" />
-          <p>Analyzing herd video...</p>
-        </div>
-      )}
 
       <div className="home-header">
         <h1 className="app-title">HerdSense</h1>

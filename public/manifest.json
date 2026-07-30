@@ -4,8 +4,8 @@
   "description": "Livestock stress detection using on-device AI",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#1a1410",
-  "theme_color": "#1a1410",
+  "background_color": "#F3F4F6",
+  "theme_color": "#F3F4F6",
   "icons": [
     {
       "src": "/favicon.svg",

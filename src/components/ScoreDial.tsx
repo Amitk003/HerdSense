@@ -16,7 +16,6 @@ export default function ScoreBadge({ score, size = 'md' }: ScoreBadgeProps) {
   return (
     <span className={`score-badge ${sz}`} style={{ color: scoreColor(score) }}>
       <span className="score-badge-num">{score}</span>
-      <span className="score-badge-label">Stress</span>
     </span>
   )
 }

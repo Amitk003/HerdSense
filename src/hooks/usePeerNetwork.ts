@@ -40,7 +40,7 @@ export function usePeerNetwork(geoHashOverride?: string): PeerState {
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null)
 
   const peerRef = useRef<Peer | null>(null)
-  const connectionsRef = useRef<Map<string, any>>(new Map())
+  const hubConnsRef = useRef<Map<string, any>>(new Map())
   const reportsRef = useRef<StressReport[]>([])
   const isDestroyedRef = useRef(false)
 
@@ -105,15 +105,15 @@ export function usePeerNetwork(geoHashOverride?: string): PeerState {
 
         // We are the hub
         hubPeer.on('connection', (conn) => {
-          connectionsRef.current.set(conn.peer, conn)
-          setPeerCount(connectionsRef.current.size)
+          hubConnsRef.current.set(conn.peer, conn)
+          setPeerCount(hubConnsRef.current.size)
 
           conn.on('data', (data: any) => {
             if (data.type === 'herd_report') {
               const rep = data.payload as StressReport
               addReport(rep)
               // Relay report to all other connected peers
-              for (const [peerId, otherConn] of connectionsRef.current.entries()) {
+              for (const [peerId, otherConn] of hubConnsRef.current.entries()) {
                 if (peerId !== conn.peer && otherConn.open) {
                   otherConn.send({ type: 'herd_report', payload: rep })
                 }
@@ -132,8 +132,8 @@ export function usePeerNetwork(geoHashOverride?: string): PeerState {
           })
 
           conn.on('close', () => {
-            connectionsRef.current.delete(conn.peer)
-            setPeerCount(connectionsRef.current.size)
+            hubConnsRef.current.delete(conn.peer)
+            setPeerCount(hubConnsRef.current.size)
           })
         })
 
@@ -169,7 +169,7 @@ export function usePeerNetwork(geoHashOverride?: string): PeerState {
             const timeout = setTimeout(() => reject(new Error('timeout')), 5000)
             conn.on('open', () => {
               clearTimeout(timeout)
-              connectionsRef.current.set(roomId, conn)
+              hubConnsRef.current.set(roomId, conn)
               peerRef.current = memberPeer
               setStatus('connected')
               setPeerCount(1)
@@ -195,7 +195,7 @@ export function usePeerNetwork(geoHashOverride?: string): PeerState {
           })
 
           conn.on('close', () => {
-            connectionsRef.current.delete(roomId)
+            hubConnsRef.current.delete(roomId)
             setStatus('connecting')
             setPeerCount(0)
           })
@@ -211,7 +211,7 @@ export function usePeerNetwork(geoHashOverride?: string): PeerState {
 
     return () => {
       isDestroyedRef.current = true
-      connectionsRef.current.clear()
+      hubConnsRef.current.clear()
       if (peerRef.current) {
         peerRef.current.destroy()
         peerRef.current = null
@@ -221,7 +221,7 @@ export function usePeerNetwork(geoHashOverride?: string): PeerState {
 
   const broadcast = useCallback((report: StressReport) => {
     addReport(report)
-    for (const conn of connectionsRef.current.values()) {
+    for (const conn of hubConnsRef.current.values()) {
       if (conn && conn.open) {
         conn.send({
           type: 'herd_report',

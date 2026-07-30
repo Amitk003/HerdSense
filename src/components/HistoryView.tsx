@@ -8,9 +8,9 @@ interface HistoryViewProps {
 }
 
 function scoreBg(s: number): string {
-  if (s < SCORE_LOW) return 'rgba(34, 197, 94, 0.15)'
-  if (s < SCORE_HIGH) return 'rgba(245, 158, 11, 0.15)'
-  return 'rgba(239, 68, 68, 0.15)'
+  if (s < SCORE_LOW) return 'color-mix(in srgb, var(--success) 15%, transparent)'
+  if (s < SCORE_HIGH) return 'color-mix(in srgb, var(--warning) 15%, transparent)'
+  return 'color-mix(in srgb, var(--danger) 15%, transparent)'
 }
 
 function scoreColor(s: number): string {
