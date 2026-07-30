@@ -82,7 +82,7 @@ export class Detector {
     const data: Float32Array = output.data
     const dims: number[] = output.dims || []
     const boxes: BoundingBox[] = []
-    const validClassIds = new Set([19, 20, 21, 22, 23, 24])
+    const validClassIds = new Set([16, 17, 18, 19, 20, 21, 22, 23, 24])
 
     console.log('[HerdSense] Model output dims:', dims, 'data length:', data.length)
 

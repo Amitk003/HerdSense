@@ -45,12 +45,21 @@ describe('calcHssi', () => {
 
   it('returns escalating trend when score rising', () => {
     const history: ScanRecord[] = [
-      { timestamp: '1', score: 30, clustering: 0, motion: 0, posture: 0, audio: 0, animalCount: 15 },
-      { timestamp: '2', score: 40, clustering: 0, motion: 0, posture: 0, audio: 0, animalCount: 15 },
-      { timestamp: '3', score: 50, clustering: 0, motion: 0, posture: 0, audio: 0, animalCount: 15 },
-      { timestamp: '4', score: 60, clustering: 0, motion: 0, posture: 0, audio: 0, animalCount: 15 }
+      { timestamp: '2026-07-30T10:00:00Z', score: 30, clustering: 0, motion: 0, posture: 0, audio: 0, animalCount: 15 },
+      { timestamp: '2026-07-30T11:00:00Z', score: 40, clustering: 0, motion: 0, posture: 0, audio: 0, animalCount: 15 },
+      { timestamp: '2026-07-30T12:00:00Z', score: 50, clustering: 0, motion: 0, posture: 0, audio: 0, animalCount: 15 },
+      { timestamp: '2026-07-30T13:00:00Z', score: 60, clustering: 0, motion: 0, posture: 0, audio: 0, animalCount: 15 }
     ]
-    const result = calcHssi([], 0, history)
+    const highFeatures: FrameFeatures[] = [
+      {
+        frameIndex: 0,
+        iasi: 50,
+        centroids: [{ x: 0, y: 0, animalId: 1 }, { x: 20, y: 20, animalId: 2 }],
+        speedStats: { meanSpeed: 10, speedVariance: 80, directionChangeFreq: 0.8 },
+        aspectRatios: [1.5, 0.8]
+      }
+    ]
+    const result = calcHssi(highFeatures, 0.9, history)
     expect(result.trend).toBe('escalating')
   })
 

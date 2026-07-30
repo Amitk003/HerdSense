@@ -140,8 +140,10 @@ export default function CameraView({ onComplete, onBack, startInUpload }: Camera
 
       const frames: DetectionFrame[] = await detector.detectFrames(video, totalFrames)
 
-      if (frames.length === 0) {
-        setError('No animals detected in the video.')
+      const totalDetections = frames.reduce((sum, f) => sum + f.boxes.length, 0)
+
+      if (frames.length === 0 || totalDetections === 0) {
+        setError('No animals detected in the video. Please try a clear video with visible livestock.')
         setStatus('error')
         URL.revokeObjectURL(url)
         container.remove()

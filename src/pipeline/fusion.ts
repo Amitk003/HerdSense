@@ -114,10 +114,12 @@ function calcPostureScore(features: FrameFeatures[]): number {
 }
 
 function calcTrend(currentScore: number, history: ScanRecord[]): 'improving' | 'stable' | 'escalating' {
-  const recent = history.slice(-4)
-  if (recent.length < 2) return 'stable'
+  if (history.length === 0) return 'stable'
+  const chronological = [...history].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
+  const scores = chronological.slice(-3).map(r => r.score)
+  scores.push(currentScore)
+  if (scores.length < 2) return 'stable'
 
-  const scores = recent.map(r => r.score)
   const indices = scores.map((_, i) => i)
   const n = indices.length
 
