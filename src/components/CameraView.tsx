@@ -25,11 +25,22 @@ export default function CameraView({ onComplete, onBack, startInUpload }: Camera
   const chunksRef = useRef<Blob[]>([])
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const activeContainerRef = useRef<HTMLDivElement | null>(null)
+  const activeUrlRef = useRef<string | null>(null)
 
   useEffect(() => {
-    if (startInUpload) return
-    startCamera()
-    return () => stopCamera()
+    if (!startInUpload) startCamera()
+    return () => {
+      stopCamera()
+      if (activeUrlRef.current) {
+        URL.revokeObjectURL(activeUrlRef.current)
+        activeUrlRef.current = null
+      }
+      if (activeContainerRef.current) {
+        activeContainerRef.current.remove()
+        activeContainerRef.current = null
+      }
+    }
   }, [startInUpload])
 
   async function startCamera() {
@@ -115,6 +126,9 @@ export default function CameraView({ onComplete, onBack, startInUpload }: Camera
     container.appendChild(video)
     document.body.appendChild(container)
 
+    activeUrlRef.current = url
+    activeContainerRef.current = container
+
     try {
       await new Promise<void>((resolve, reject) => {
         video.onloadedmetadata = () => resolve()
@@ -145,8 +159,6 @@ export default function CameraView({ onComplete, onBack, startInUpload }: Camera
       if (frames.length === 0 || totalDetections === 0) {
         setError('No animals detected in the video. Please try a clear video with visible livestock.')
         setStatus('error')
-        URL.revokeObjectURL(url)
-        container.remove()
         return
       }
 
@@ -171,16 +183,21 @@ export default function CameraView({ onComplete, onBack, startInUpload }: Camera
         animalCount: final.animalCount
       })
 
-      URL.revokeObjectURL(url)
-      container.remove()
       onComplete(final)
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Unknown error'
       console.error('Processing failed:', msg)
       setError(msg)
       setStatus('error')
-      URL.revokeObjectURL(url)
-      container.remove()
+    } finally {
+      if (activeUrlRef.current === url) {
+        URL.revokeObjectURL(url)
+        activeUrlRef.current = null
+      }
+      if (activeContainerRef.current === container) {
+        container.remove()
+        activeContainerRef.current = null
+      }
     }
   }
 

@@ -18,6 +18,20 @@ export interface PeerState {
   broadcast: (report: StressReport) => void
 }
 
+function isValidReport(rep: any): rep is StressReport {
+  return (
+    rep !== null &&
+    typeof rep === 'object' &&
+    typeof rep.id === 'string' &&
+    typeof rep.lat === 'number' && !isNaN(rep.lat) && Math.abs(rep.lat) <= 90 &&
+    typeof rep.lng === 'number' && !isNaN(rep.lng) && Math.abs(rep.lng) <= 180 &&
+    typeof rep.score === 'number' && rep.score >= 0 && rep.score <= 100 &&
+    typeof rep.animalCount === 'number' && rep.animalCount >= 0 &&
+    typeof rep.species === 'string' &&
+    typeof rep.timestamp === 'string'
+  )
+}
+
 function getInitialLocation(): Promise<{ lat: number; lng: number } | null> {
   return new Promise(resolve => {
     if (!navigator.geolocation) {
@@ -138,8 +152,8 @@ export function usePeerNetwork(geoHashOverride?: string): PeerState {
           })
 
           conn.on('data', (data: any) => {
-            if (data.type === 'herd_report') {
-              const rep = data.payload as StressReport
+            if (data && data.type === 'herd_report' && isValidReport(data.payload)) {
+              const rep = data.payload
               addReport(rep)
               for (const [peerId, otherConn] of hubConnsRef.current.entries()) {
                 if (peerId !== conn.peer && otherConn && otherConn.open) {
@@ -147,16 +161,17 @@ export function usePeerNetwork(geoHashOverride?: string): PeerState {
                 }
               }
             }
-            if (data.type === 'sync_request') {
+            if (data && data.type === 'sync_request') {
               conn.send({
                 type: 'sync_response',
                 payload: reportsRef.current.slice(0, 20)
               })
               syncHubPeerCount()
             }
-            if (data.type === 'sync_response') {
-              const synced = data.payload as StressReport[]
-              for (const r of synced) addReport(r)
+            if (data && data.type === 'sync_response' && Array.isArray(data.payload)) {
+              for (const r of data.payload) {
+                if (isValidReport(r)) addReport(r)
+              }
             }
           })
 
@@ -219,16 +234,17 @@ export function usePeerNetwork(geoHashOverride?: string): PeerState {
           conn.send({ type: 'sync_request' })
 
           conn.on('data', (data: any) => {
-            if (data.type === 'peer_count') {
+            if (data && data.type === 'peer_count') {
               const totalInRoom = Number(data.payload) || 1
               setPeerCount(Math.max(0, totalInRoom - 1))
             }
-            if (data.type === 'herd_report') {
-              addReport(data.payload as StressReport)
+            if (data && data.type === 'herd_report' && isValidReport(data.payload)) {
+              addReport(data.payload)
             }
-            if (data.type === 'sync_response') {
-              const synced = data.payload as StressReport[]
-              for (const r of synced) addReport(r)
+            if (data && data.type === 'sync_response' && Array.isArray(data.payload)) {
+              for (const r of data.payload) {
+                if (isValidReport(r)) addReport(r)
+              }
             }
           })
 
