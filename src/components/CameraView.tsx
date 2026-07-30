@@ -242,14 +242,14 @@ export default function CameraView({ onComplete, onBack, startInUpload }: Camera
       {useFileUpload ? (
         <div className="camera-body">
           <div className="upload-area">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--sand)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
               <polyline points="17 8 12 3 7 8" />
               <line x1="12" y1="3" x2="12" y2="15" />
             </svg>
-            <p style={{ color: 'var(--cream)', fontSize: 15, fontWeight: 600 }}>Camera unavailable</p>
-            <p style={{ color: 'var(--sand)', fontSize: 13, marginTop: 4 }}>
-              Upload a video file of your herd instead.
+            <p style={{ color: 'var(--text)', fontSize: 15, fontWeight: 600 }}>Upload a video</p>
+            <p style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 4 }}>
+              Select a video file of your herd to analyze.
             </p>
             <label className="upload-btn">
               Choose Video File

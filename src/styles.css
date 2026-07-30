@@ -830,6 +830,35 @@ button:focus-visible {
 }
 
 /* ---- Camera Screen ---- */
+.back-link {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-muted);
+  padding: 8px 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.back-link:hover {
+  color: var(--text);
+}
+
+.camera-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  padding-top: calc(12px + env(safe-area-inset-top));
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+}
+
+.camera-header h1 {
+  font-weight: 600;
+  font-size: 16px;
+}
+
 .camera-screen {
   display: flex;
   flex-direction: column;
