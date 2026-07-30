@@ -4,6 +4,7 @@ import { CONFIDENCE_THRESHOLD, FRAME_SAMPLE_RATE, FPS } from '../constants'
 export class Detector {
   private session: any = null
   private modelLoaded = false
+  private modelError = ''
 
   async loadModel(modelPath: string): Promise<void> {
     try {
@@ -12,9 +13,10 @@ export class Detector {
         executionProviders: ['webgl', 'wasm']
       })
       this.modelLoaded = true
+      this.modelError = ''
     } catch (err) {
-      console.warn('ONNX model load failed, using preset mode:', err)
-      this.modelLoaded = false
+      this.modelError = err instanceof Error ? err.message : String(err)
+      throw new Error(`Model failed to load: ${this.modelError}`)
     }
   }
 

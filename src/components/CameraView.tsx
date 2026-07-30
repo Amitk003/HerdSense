@@ -125,8 +125,13 @@ export default function CameraView({ onComplete, onBack, startInUpload }: Camera
 
       const totalFrames = Math.floor(duration * FPS)
 
-      const detector = new Detector()
-      await detector.loadModel('/models/yolov8n.onnx')
+      let detector: Detector
+      try {
+        detector = new Detector()
+        await detector.loadModel('/models/yolov8n.onnx')
+      } catch {
+        throw new Error('AI model failed to load. The app needs WebGL support.')
+      }
 
       const frames: DetectionFrame[] = await detector.detectFrames(video, totalFrames)
 
