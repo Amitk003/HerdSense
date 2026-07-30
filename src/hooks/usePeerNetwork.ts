@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Peer from 'peerjs'
 import type { StressReport } from '../pipeline/types'
-import { geoHashBounds } from '../utils/geohash'
 
 const PEER_HOST = '0.peerjs.com'
 const PEER_PORT = 443
@@ -16,15 +15,6 @@ export interface PeerState {
   geohash: string | null
   location: { lat: number; lng: number } | null
   broadcast: (report: StressReport) => void
-}
-
-function usesSameRoom(gh1: string, gh2: string): boolean {
-  if (gh1 === gh2) return true
-  const b1 = geoHashBounds(gh1)
-  const b2 = geoHashBounds(gh2)
-  const latOverlap = b1.lat[0] < b2.lat[1] && b2.lat[0] < b1.lat[1]
-  const lngOverlap = b1.lng[0] < b2.lng[1] && b2.lng[0] < b1.lng[1]
-  return latOverlap && lngOverlap
 }
 
 function getInitialLocation(): Promise<{ lat: number; lng: number } | null> {

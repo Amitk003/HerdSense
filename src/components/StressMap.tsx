@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react'
-import { MapContainer, TileLayer, Circle, CircleMarker, Tooltip } from 'react-leaflet'
+import { useState, useMemo, useRef, useEffect } from 'react'
+import { MapContainer, TileLayer, Circle, CircleMarker, Tooltip, useMap } from 'react-leaflet'
 import type { StressReport, AlertCluster } from '../pipeline/types'
 import { findAlertClusters } from '../utils/clustering'
 
@@ -13,12 +13,48 @@ function scoreOpacity(s: number): number {
   return 0.4 + (s / 100) * 0.6
 }
 
+interface MapControllerProps {
+  focusedReportId: string | null
+  reports: StressReport[]
+  onClusterAlert?: (cluster: AlertCluster) => void
+}
+
+function MapController({ focusedReportId, reports, onClusterAlert }: MapControllerProps) {
+  const map = useMap()
+  const prevClusterKeys = useRef<Set<string>>(new Set())
+
+  // Fly to report when focusedReportId changes
+  useEffect(() => {
+    if (!focusedReportId) return
+    const report = reports.find(r => r.id === focusedReportId)
+    if (report) {
+      map.flyTo([report.lat, report.lng], 12, { duration: 1 })
+    }
+  }, [focusedReportId, reports, map])
+
+  // Detect new clusters and fire alerts
+  useEffect(() => {
+    const clusters = findAlertClusters(reports)
+    for (const c of clusters) {
+      const key = `${c.center.lat.toFixed(2)}-${c.center.lng.toFixed(2)}-${c.herdCount}`
+      if (!prevClusterKeys.current.has(key)) {
+        prevClusterKeys.current.add(key)
+        onClusterAlert?.(c)
+      }
+    }
+  }, [reports, onClusterAlert])
+
+  return null
+}
+
 interface StressMapProps {
   onBack?: () => void
   reports?: StressReport[]
+  focusedReportId?: string | null
+  onClusterAlert?: (cluster: AlertCluster) => void
 }
 
-export default function StressMap({ onBack, reports = [] }: StressMapProps) {
+export default function StressMap({ onBack, reports = [], focusedReportId, onClusterAlert }: StressMapProps) {
   const [tilesLoaded, setTilesLoaded] = useState(false)
 
   const clusters: AlertCluster[] = useMemo(() => findAlertClusters(reports), [reports])
@@ -38,6 +74,11 @@ export default function StressMap({ onBack, reports = [] }: StressMapProps) {
 
       <div className="map-body">
         <MapContainer center={center} zoom={10} className="map-container" zoomControl={false}>
+          <MapController
+            focusedReportId={focusedReportId ?? null}
+            reports={reports}
+            onClusterAlert={onClusterAlert}
+          />
           {!tilesLoaded && (
             <div style={{
               position: 'absolute', inset: 0, display: 'flex',
