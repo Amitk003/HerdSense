@@ -88,31 +88,23 @@ export default function HomeScreen({ onPresetSelected, onNavigateCamera, onNavig
         </div>
       )}
 
-      <section>
-        <h2 className="section-label">Demo presets</h2>
-        <div className="presets-grid">
-          {DEMO_PRESETS.map(preset => {
-            const sc = preset.precomputedScore
-            const badgeBg = sc < 33 ? 'rgba(34, 197, 94, 0.15)' : sc < 66 ? 'rgba(245, 158, 11, 0.15)' : 'rgba(239, 68, 68, 0.15)'
-            const badgeColor = sc < 33 ? 'var(--success)' : sc < 66 ? 'var(--warning)' : 'var(--danger)'
-            return (
-              <button
-                key={preset.id}
-                className={`preset-card preset-${preset.id}`}
-                onClick={() => handlePreset(preset)}
-              >
-                <span className="preset-score-badge" style={{ background: badgeBg, color: badgeColor }}>
-                  {sc}
-                </span>
-                <div className="preset-info">
-                  <span className="preset-label">{preset.label}</span>
-                  <span className="preset-desc">{preset.description}</span>
-                </div>
-              </button>
-            )
-          })}
-        </div>
-      </section>
+      <div className="presets-row">
+        {DEMO_PRESETS.map(preset => {
+          const sc = preset.precomputedScore
+          const isHigh = sc >= 66
+          const isMid = sc >= 33 && sc < 66
+          return (
+            <button
+              key={preset.id}
+              className={`preset-chip ${isHigh ? 'chip-danger' : isMid ? 'chip-warn' : 'chip-ok'}`}
+              onClick={() => handlePreset(preset)}
+            >
+              <span className="preset-chip-score">{sc}</span>
+              <span className="preset-chip-label">{preset.label}</span>
+            </button>
+          )
+        })}
+      </div>
 
       <div className="home-nav">
         <div className="card" onClick={onNavigateHistory}>
