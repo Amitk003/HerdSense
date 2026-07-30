@@ -68,6 +68,7 @@ export interface DemoPreset {
 }
 
 export interface StressReport {
+  id: string
   lat: number
   lng: number
   score: number
@@ -76,12 +77,13 @@ export interface StressReport {
   timestamp: string
 }
 
-export interface Alert {
+export interface AlertCluster {
   center: { lat: number; lng: number }
   avgScore: number
   herdCount: number
   radiusKm: number
   triggeredAt: string
+  members: StressReport[]
 }
 
 export interface NdviReading {

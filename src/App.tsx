@@ -41,7 +41,7 @@ export default function App() {
         />
       )}
       {screen === 'map' && (
-        <StressMap onBack={handleBackHome} />
+        <StressMap onBack={handleBackHome} reports={[]} />
       )}
       {screen === 'history' && (
         <HistoryView

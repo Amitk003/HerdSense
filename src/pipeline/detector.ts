@@ -84,7 +84,7 @@ export class Detector {
       const score = data[i + 4]
       const classId = data[i + 5]
 
-      if (classId === 0 || classId === 17 || classId === 18) {
+      if (classId >= 19 && classId <= 24) {
         boxes.push({
           x: x - w / 2,
           y: y - h / 2,
