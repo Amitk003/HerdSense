@@ -11,13 +11,14 @@ const RECORD_DURATION = 20
 interface CameraViewProps {
   onComplete: (result: HerdStressResult) => void
   onBack: () => void
+  startInUpload?: boolean
 }
 
-export default function CameraView({ onComplete, onBack }: CameraViewProps) {
-  const [status, setStatus] = useState<'preparing' | 'ready' | 'recording' | 'processing' | 'error'>('preparing')
+export default function CameraView({ onComplete, onBack, startInUpload }: CameraViewProps) {
+  const [status, setStatus] = useState<'preparing' | 'ready' | 'recording' | 'processing' | 'error'>(startInUpload ? 'ready' : 'preparing')
+  const [useFileUpload, setUseFileUpload] = useState(!!startInUpload)
   const [error, setError] = useState('')
   const [countdown, setCountdown] = useState(RECORD_DURATION)
-  const [useFileUpload, setUseFileUpload] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const recorderRef = useRef<MediaRecorder | null>(null)
@@ -25,9 +26,10 @@ export default function CameraView({ onComplete, onBack }: CameraViewProps) {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => {
+    if (startInUpload) return
     startCamera()
     return () => stopCamera()
-  }, [])
+  }, [startInUpload])
 
   async function startCamera() {
     try {

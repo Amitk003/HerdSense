@@ -314,6 +314,15 @@ button:focus-visible {
   box-shadow: 0 2px 10px rgba(217, 119, 6, 0.1);
 }
 
+.upload-btn-big {
+  background: var(--accent);
+  box-shadow: 0 4px 20px rgba(37, 99, 235, 0.2);
+}
+
+.upload-btn-big:active {
+  box-shadow: 0 2px 10px rgba(37, 99, 235, 0.1);
+}
+
 .home-quick-btn {
   display: flex;
   align-items: center;

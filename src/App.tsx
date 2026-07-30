@@ -9,7 +9,7 @@ import NearbyFeed from './components/NearbyFeed'
 import { usePeerNetwork } from './hooks/usePeerNetwork'
 import type { HerdStressResult, StressReport, AlertCluster } from './pipeline/types'
 
-type Screen = 'home' | 'camera' | 'analysis' | 'map' | 'history'
+type Screen = 'home' | 'camera' | 'upload' | 'analysis' | 'map' | 'history'
 
 let reportCounter = 0
 
@@ -130,6 +130,7 @@ export default function App() {
       {screen === 'home' && (
         <HomeScreen
           onNavigateCamera={() => setScreen('camera')}
+          onNavigateUpload={() => setScreen('upload')}
           onNavigateMap={() => setScreen('map')}
           onNavigateHistory={() => setScreen('history')}
         />
@@ -138,6 +139,13 @@ export default function App() {
         <CameraView
           onComplete={handleAnalysisComplete}
           onBack={() => setScreen('home')}
+        />
+      )}
+      {screen === 'upload' && (
+        <CameraView
+          onComplete={handleAnalysisComplete}
+          onBack={() => setScreen('home')}
+          startInUpload
         />
       )}
       {screen === 'analysis' && result && (
