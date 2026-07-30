@@ -82,7 +82,8 @@ export default function AnalysisView({ result, onBack, onViewHistory, onViewMap 
         </div>
       </div>
 
-      <div className="analysis-recommendation" style={{ borderLeftColor: barColor }}>
+      <div className="analysis-recommendation">
+        <span className="rec-icon" style={{ background: barColor, color: '#1a1410' }}>!</span>
         {result.recommendation}
       </div>
 
