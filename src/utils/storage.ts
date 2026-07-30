@@ -16,8 +16,21 @@ export function saveRecord(record: ScanRecord): ScanRecord[] {
   const history = loadHistory()
   history.unshift(record)
 
-  const trimmed = history.slice(0, MAX_HISTORY_RECORDS)
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed))
+  let trimmed = history.slice(0, MAX_HISTORY_RECORDS)
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed))
+  } catch (err) {
+    console.warn('Storage quota exceeded, pruning history records:', err)
+    while (trimmed.length > 5) {
+      trimmed.pop()
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed))
+        break
+      } catch {
+        // continue pruning
+      }
+    }
+  }
   return trimmed
 }
 
