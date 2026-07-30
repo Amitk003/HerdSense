@@ -7,11 +7,12 @@ import ScoreDial from './ScoreDial'
 
 interface HomeScreenProps {
   onPresetSelected: (result: HerdStressResult) => void
+  onNavigateCamera: () => void
   onNavigateMap: () => void
   onNavigateHistory: () => void
 }
 
-export default function HomeScreen({ onPresetSelected, onNavigateMap, onNavigateHistory }: HomeScreenProps) {
+export default function HomeScreen({ onPresetSelected, onNavigateCamera, onNavigateMap, onNavigateHistory }: HomeScreenProps) {
   const [loading, setLoading] = useState(false)
   const history = loadHistory()
   const lastScore = history.length > 0 ? history[0].score : null
@@ -85,7 +86,7 @@ export default function HomeScreen({ onPresetSelected, onNavigateMap, onNavigate
       </section>
 
       <nav className="home-nav">
-        <button className="nav-btn nav-btn-primary" onClick={() => alert('Camera recording coming soon')}>
+        <button className="nav-btn nav-btn-primary" onClick={onNavigateCamera}>
           Record New
         </button>
         <button className="nav-btn" onClick={onNavigateMap}>
