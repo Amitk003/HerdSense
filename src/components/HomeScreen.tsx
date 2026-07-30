@@ -14,11 +14,13 @@ interface HomeScreenProps {
 
 export default function HomeScreen({ onPresetSelected, onNavigateCamera, onNavigateMap, onNavigateHistory }: HomeScreenProps) {
   const [loading, setLoading] = useState(false)
+  const [showDemo, setShowDemo] = useState(false)
   const history = loadHistory()
   const lastScore = history.length > 0 ? history[0].score : null
 
   const handlePreset = async (preset: DemoPreset) => {
     setLoading(true)
+    setShowDemo(false)
 
     const h = loadHistory()
     const result = calcHssi(
@@ -88,17 +90,28 @@ export default function HomeScreen({ onPresetSelected, onNavigateCamera, onNavig
         </div>
       )}
 
-      <p className="demo-line">
-        Try a demo:{' '}
-        {DEMO_PRESETS.map((p, i) => (
-          <span key={p.id}>
-            {i > 0 && <span className="demo-sep"> · </span>}
-            <button className={`demo-link demo-${p.id}`} onClick={() => handlePreset(p)}>
-              {p.label}
-            </button>
-          </span>
-        ))}
-      </p>
+      <div className="demo-trigger">
+        <button className="demo-btn" onClick={() => setShowDemo(!showDemo)}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polygon points="5 3 19 12 5 21 5 3" />
+          </svg>
+          Demo
+        </button>
+        {showDemo && (
+          <div className="demo-panel">
+            {DEMO_PRESETS.map(p => {
+              const colors: Record<string, string> = { healthy: 'var(--success)', 'early-stress': 'var(--warning)', critical: 'var(--danger)' }
+              return (
+                <button key={p.id} className="demo-opt" onClick={() => handlePreset(p)}>
+                  <span className="demo-opt-score" style={{ color: colors[p.id] }}>{p.precomputedScore}</span>
+                  <span className="demo-opt-label">{p.label}</span>
+                  <span className="demo-opt-arrow">&rarr;</span>
+                </button>
+              )
+            })}
+          </div>
+        )}
+      </div>
 
       <div className="home-nav">
         <div className="card" onClick={onNavigateHistory}>
