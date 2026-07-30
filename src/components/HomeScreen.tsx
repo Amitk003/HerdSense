@@ -80,6 +80,9 @@ export default function HomeScreen({ onPresetSelected, onNavigateMap, onNavigate
       </section>
 
       <nav className="home-nav">
+        <button className="nav-btn nav-btn-primary" onClick={() => alert('Camera recording coming soon')}>
+          Record New
+        </button>
         <button className="nav-btn" onClick={onNavigateMap}>
           View Regional Map
         </button>
