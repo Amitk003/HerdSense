@@ -239,7 +239,14 @@ export default function CameraView({ onComplete, onBack, startInUpload }: Camera
         <h1>{useFileUpload ? 'Upload Video' : 'Record Herd'}</h1>
       </div>
 
-      {useFileUpload ? (
+      {status === 'processing' ? (
+        <div className="camera-body">
+          <div className="processing-indicator">
+            <div className="spinner" />
+            <p>Analyzing video...</p>
+          </div>
+        </div>
+      ) : useFileUpload ? (
         <div className="camera-body">
           <div className="upload-area">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -274,7 +281,7 @@ export default function CameraView({ onComplete, onBack, startInUpload }: Camera
             />
             {status === 'preparing' && (
               <div className="camera-overlay">
-                <div className="loading-spinner" />
+                <div className="spinner" />
                 <p>Starting camera...</p>
               </div>
             )}
@@ -305,16 +312,10 @@ export default function CameraView({ onComplete, onBack, startInUpload }: Camera
                 Stop Now
               </button>
             )}
-            {status === 'processing' && (
-              <div className="processing-indicator">
-                <div className="loading-spinner" />
-                <p>Analyzing video...</p>
-              </div>
-            )}
             {status === 'error' && (
               <div className="error-card">
                 <p>{error}</p>
-                <button className="nav-btn" onClick={handleRetry}>Try Again</button>
+                <button className="action-btn" onClick={handleRetry}>Try Again</button>
               </div>
             )}
           </div>
