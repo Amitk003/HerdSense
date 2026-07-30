@@ -81,6 +81,23 @@ export function usePeerNetwork(geoHashOverride?: string): PeerState {
 
       const roomId = gh
 
+      const syncHubPeerCount = () => {
+        for (const [peerId, conn] of hubConnsRef.current.entries()) {
+          if (!conn || !conn.open) {
+            hubConnsRef.current.delete(peerId)
+          }
+        }
+        const activeMembers = hubConnsRef.current.size
+        setPeerCount(activeMembers)
+
+        const totalInRoom = activeMembers + 1
+        for (const conn of hubConnsRef.current.values()) {
+          if (conn && conn.open) {
+            conn.send({ type: 'peer_count', payload: totalInRoom })
+          }
+        }
+      }
+
       // Try to become the room hub
       try {
         const hubPeer = new Peer(roomId, {
@@ -105,16 +122,17 @@ export function usePeerNetwork(geoHashOverride?: string): PeerState {
 
         // We are the hub
         hubPeer.on('connection', (conn) => {
-          hubConnsRef.current.set(conn.peer, conn)
-          setPeerCount(hubConnsRef.current.size)
+          conn.on('open', () => {
+            hubConnsRef.current.set(conn.peer, conn)
+            syncHubPeerCount()
+          })
 
           conn.on('data', (data: any) => {
             if (data.type === 'herd_report') {
               const rep = data.payload as StressReport
               addReport(rep)
-              // Relay report to all other connected peers
               for (const [peerId, otherConn] of hubConnsRef.current.entries()) {
-                if (peerId !== conn.peer && otherConn.open) {
+                if (peerId !== conn.peer && otherConn && otherConn.open) {
                   otherConn.send({ type: 'herd_report', payload: rep })
                 }
               }
@@ -124,6 +142,7 @@ export function usePeerNetwork(geoHashOverride?: string): PeerState {
                 type: 'sync_response',
                 payload: reportsRef.current.slice(0, 20)
               })
+              syncHubPeerCount()
             }
             if (data.type === 'sync_response') {
               const synced = data.payload as StressReport[]
@@ -133,7 +152,12 @@ export function usePeerNetwork(geoHashOverride?: string): PeerState {
 
           conn.on('close', () => {
             hubConnsRef.current.delete(conn.peer)
-            setPeerCount(hubConnsRef.current.size)
+            syncHubPeerCount()
+          })
+
+          conn.on('error', () => {
+            hubConnsRef.current.delete(conn.peer)
+            syncHubPeerCount()
           })
         })
 
@@ -185,6 +209,10 @@ export function usePeerNetwork(geoHashOverride?: string): PeerState {
           conn.send({ type: 'sync_request' })
 
           conn.on('data', (data: any) => {
+            if (data.type === 'peer_count') {
+              const totalInRoom = Number(data.payload) || 1
+              setPeerCount(Math.max(0, totalInRoom - 1))
+            }
             if (data.type === 'herd_report') {
               addReport(data.payload as StressReport)
             }
@@ -200,6 +228,12 @@ export function usePeerNetwork(geoHashOverride?: string): PeerState {
             setPeerCount(0)
           })
 
+          conn.on('error', () => {
+            hubConnsRef.current.delete(roomId)
+            setStatus('connecting')
+            setPeerCount(0)
+          })
+
         } catch {
           setStatus('error')
           setErrorMsg('Could not connect to nearby network.')
@@ -209,8 +243,20 @@ export function usePeerNetwork(geoHashOverride?: string): PeerState {
 
     init()
 
+    const heartbeat = setInterval(() => {
+      if (peerRef.current && hubConnsRef.current.size > 0) {
+        for (const [peerId, conn] of hubConnsRef.current.entries()) {
+          if (!conn || !conn.open) {
+            hubConnsRef.current.delete(peerId)
+          }
+        }
+        setPeerCount(hubConnsRef.current.size)
+      }
+    }, 5000)
+
     return () => {
       isDestroyedRef.current = true
+      clearInterval(heartbeat)
       hubConnsRef.current.clear()
       if (peerRef.current) {
         peerRef.current.destroy()
@@ -233,4 +279,3 @@ export function usePeerNetwork(geoHashOverride?: string): PeerState {
 
   return { status, errorMsg, reports, peerCount, geohash, location, broadcast }
 }
-
