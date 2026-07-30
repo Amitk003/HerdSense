@@ -29,6 +29,20 @@ html, body, #root {
   overscroll-behavior: none;
 }
 
+.peer-badge {
+  position: fixed;
+  top: 8px;
+  right: 8px;
+  z-index: 1000;
+  padding: 4px 10px;
+  border-radius: 12px;
+  background: var(--grass-deep);
+  color: var(--grass);
+  font-size: 11px;
+  font-weight: 500;
+  pointer-events: none;
+}
+
 .app {
   max-width: 480px;
   margin: 0 auto;
