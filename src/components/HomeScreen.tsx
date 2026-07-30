@@ -88,23 +88,17 @@ export default function HomeScreen({ onPresetSelected, onNavigateCamera, onNavig
         </div>
       )}
 
-      <div className="presets-row">
-        {DEMO_PRESETS.map(preset => {
-          const sc = preset.precomputedScore
-          const isHigh = sc >= 66
-          const isMid = sc >= 33 && sc < 66
-          return (
-            <button
-              key={preset.id}
-              className={`preset-chip ${isHigh ? 'chip-danger' : isMid ? 'chip-warn' : 'chip-ok'}`}
-              onClick={() => handlePreset(preset)}
-            >
-              <span className="preset-chip-score">{sc}</span>
-              <span className="preset-chip-label">{preset.label}</span>
+      <p className="demo-line">
+        Try a demo:{' '}
+        {DEMO_PRESETS.map((p, i) => (
+          <span key={p.id}>
+            {i > 0 && <span className="demo-sep"> · </span>}
+            <button className={`demo-link demo-${p.id}`} onClick={() => handlePreset(p)}>
+              {p.label}
             </button>
-          )
-        })}
-      </div>
+          </span>
+        ))}
+      </p>
 
       <div className="home-nav">
         <div className="card" onClick={onNavigateHistory}>
