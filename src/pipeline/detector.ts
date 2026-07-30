@@ -299,7 +299,7 @@ export class Detector {
       timeout = setTimeout(() => {
         video.removeEventListener('seeked', handler)
         resolve()
-      }, 300)
+      }, 100)
     })
   }
 }
