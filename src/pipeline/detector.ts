@@ -65,14 +65,19 @@ export class Detector {
 
   private async preprocess(imageData: ImageData): Promise<any> {
     const ort = await import('onnxruntime-web')
-    const pixels = new Float32Array(640 * 640 * 3)
-    let idx = 0
-    for (let i = 0; i < imageData.data.length; i += 4) {
-      pixels[idx++] = imageData.data[i] / 255.0
-      pixels[idx++] = imageData.data[i + 1] / 255.0
-      pixels[idx++] = imageData.data[i + 2] / 255.0
+    const width = imageData.width
+    const height = imageData.height
+    const size = width * height
+    const pixels = new Float32Array(3 * size)
+    const data = imageData.data
+
+    for (let i = 0; i < size; i++) {
+      pixels[i] = data[i * 4] / 255.0            // Red channel
+      pixels[size + i] = data[i * 4 + 1] / 255.0 // Green channel
+      pixels[2 * size + i] = data[i * 4 + 2] / 255.0 // Blue channel
     }
-    return new ort.Tensor('float32', pixels, [1, 3, 640, 640])
+
+    return new ort.Tensor('float32', pixels, [1, 3, height, width])
   }
 
   private parseOutput(results: any, imgW: number, imgH: number): BoundingBox[] {
