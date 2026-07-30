@@ -24,12 +24,13 @@ function scoreColor(score: number): string {
 
 export default function HomeScreen({ onPresetSelected, onNavigateMap, onNavigateHistory }: HomeScreenProps) {
   const [loading, setLoading] = useState(false)
+  const [toast, setToast] = useState('')
   const history = loadHistory()
   const last = history.length > 0 ? history[0] : null
 
   const handlePreset = async (preset: DemoPreset) => {
     setLoading(true)
-    await new Promise(r => setTimeout(r, 400))
+    await new Promise(r => setTimeout(r, 800))
 
     const h = loadHistory()
     const result = calcHssi(
@@ -70,13 +71,14 @@ export default function HomeScreen({ onPresetSelected, onNavigateMap, onNavigate
           <p>Analyzing herd...</p>
         </div>
       )}
+      {toast && <div className="toast">{toast}</div>}
 
       <div className="home-brand">
         <h1>HerdSense</h1>
         <p>Livestock stress detection</p>
       </div>
 
-      <button className="record-btn" onClick={() => alert('Camera coming soon')}>
+      <button className="record-btn" onClick={() => setToast('Camera coming soon')}>
         Record New
       </button>
 
@@ -98,18 +100,27 @@ export default function HomeScreen({ onPresetSelected, onNavigateMap, onNavigate
       </div>
 
       {last && (
-        <div className="last-resume" onClick={onNavigateHistory}>
+        <button className="last-resume" onClick={onNavigateHistory}>
           Last: {last.score} on {new Date(last.timestamp).toLocaleDateString()}
-        </div>
+        </button>
       )}
 
       <div className="home-footer">
-        <button className="footer-btn" onClick={onNavigateMap}>
-          <span>&#x1F5FA;</span>
+        <button className={"footer-btn" + (false ? '' : '')} onClick={onNavigateMap}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" />
+            <line x1="8" y1="2" x2="8" y2="18" />
+            <line x1="16" y1="6" x2="16" y2="22" />
+          </svg>
           <span>Map</span>
         </button>
         <button className="footer-btn" onClick={onNavigateHistory}>
-          <span>&#x1F4CB;</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
+          </svg>
           <span>History</span>
         </button>
       </div>

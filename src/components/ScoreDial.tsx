@@ -49,7 +49,7 @@ export default function ScoreDial({ score, size }: ScoreDialProps) {
       <text
         x={r} y={r + size * 0.14}
         textAnchor="middle"
-        fill="rgba(255,255,255,0.25)"
+        fill="#a8a29e"
         fontSize={size * 0.065}
         fontWeight="600"
         fontFamily="Inter, sans-serif"

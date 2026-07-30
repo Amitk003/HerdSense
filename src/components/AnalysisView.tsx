@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { HerdStressResult } from '../pipeline/types'
 import ScoreDial from './ScoreDial'
 
@@ -28,11 +29,25 @@ const SUB_SCORES: { key: keyof HerdStressResult; label: string; color: string }[
 ]
 
 export default function AnalysisView({ result, onBack, onViewHistory, onViewMap }: AnalysisViewProps) {
+  const [toast, setToast] = useState('')
   const barColor = result.score < 35 ? '#84cc16' : result.score < 65 ? '#d97706' : '#b91c1c'
   const total = result.clustering + result.motion + result.posture + result.audio
 
+  const copyReport = async () => {
+    const p = { lat: 3.5, lng: 38.5, score: result.score, timestamp: result.timestamp }
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(p))
+      setToast('Report copied')
+    } catch {
+      setToast('Copy failed - use HTTPS')
+    }
+    setTimeout(() => setToast(''), 2000)
+  }
+
   return (
     <div className="screen analysis-screen">
+      {toast && <div className="toast">{toast}</div>}
+
       <button className="back-link" onClick={onBack}>&#8592; Back</button>
 
       <div className="analysis-hero">
@@ -72,14 +87,7 @@ export default function AnalysisView({ result, onBack, onViewHistory, onViewMap 
       </div>
 
       <div className="analysis-actions">
-        <button className="action-btn" onClick={onBack}>Back</button>
-        <button className="action-btn share" onClick={() => {
-          const p = { lat: 3.5, lng: 38.5, score: result.score, timestamp: result.timestamp }
-          navigator.clipboard.writeText(JSON.stringify(p))
-          alert('Copied to clipboard')
-        }}>
-          Share
-        </button>
+        <button className="action-btn share" onClick={copyReport}>Share</button>
         <button className="action-btn" onClick={onViewMap}>Map</button>
         <button className="action-btn" onClick={onViewHistory}>History</button>
       </div>

@@ -20,6 +20,7 @@ interface StressMapProps {
 export default function StressMap({ onBack }: StressMapProps) {
   const [day, setDay] = useState(14)
   const [showNdvi, setShowNdvi] = useState(false)
+  const [tilesLoaded, setTilesLoaded] = useState(false)
 
   const timeline = useMemo(() => getNdviTimeline(), [])
   const reports = useMemo(() => getReportsUpToDay(day), [day])
@@ -61,9 +62,20 @@ export default function StressMap({ onBack }: StressMapProps) {
 
       <div className="map-body">
         <MapContainer center={center} zoom={10} className="map-container" zoomControl={false}>
+          {!tilesLoaded && (
+            <div style={{
+              position: 'absolute', inset: 0, display: 'flex',
+              alignItems: 'center', justifyContent: 'center',
+              background: '#2d241e', zIndex: 500,
+              color: '#a8a29e', fontSize: 14
+            }}>
+              Loading map tiles...
+            </div>
+          )}
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            eventHandlers={{ load: () => setTilesLoaded(true) }}
           />
           {showNdvi && (
             <GeoJSON
@@ -164,6 +176,7 @@ export default function StressMap({ onBack }: StressMapProps) {
             <span>5</span>
             <span>10</span>
             <span>15</span>
+            <span>18</span>
           </div>
         </div>
       </div>

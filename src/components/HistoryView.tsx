@@ -20,6 +20,13 @@ function scoreColor(s: number): string {
 export default function HistoryView({ onBack, onRunNew }: HistoryViewProps) {
   const history = loadHistory()
 
+  const handleClear = () => {
+    if (window.confirm('Delete all scan history?')) {
+      clearHistory()
+      onBack()
+    }
+  }
+
   return (
     <div className="screen history-screen">
       <div className="history-header">
@@ -36,9 +43,9 @@ export default function HistoryView({ onBack, onRunNew }: HistoryViewProps) {
         </div>
       ) : (
         <>
-          <ul className="history-list">
+          <div className="history-list">
             {history.map((r, i) => (
-              <li key={i} className="history-item">
+              <div key={i} className="history-item">
                 <div className="history-item-score" style={{ background: scoreBg(r.score), color: scoreColor(r.score) }}>
                   {r.score}
                 </div>
@@ -50,13 +57,13 @@ export default function HistoryView({ onBack, onRunNew }: HistoryViewProps) {
                     {new Date(r.timestamp).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
                   </div>
                 </div>
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
 
           <div className="history-footer">
             <button className="action-btn" onClick={onRunNew}>New Scan</button>
-            <button className="action-btn" style={{ color: '#b91c1c' }} onClick={() => { clearHistory(); onBack() }}>
+            <button className="action-btn" style={{ color: '#b91c1c' }} onClick={handleClear}>
               Clear
             </button>
           </div>
