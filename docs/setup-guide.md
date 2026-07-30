@@ -1,135 +1,49 @@
-# Setup Guide
+# HerdSense Setup Guide
 
-How to get HerdSense running on your machine.
+## Requirements
 
----
+- Node.js 18 or later
+- npm 9 or later
+- A modern browser (Chrome, Safari, Firefox)
 
-## Prerequisites
+## Setup
 
-- Node.js 18 or higher
-- npm or yarn
-- Git
-- A modern web browser (Chrome, Firefox, Edge, or mobile browser)
-
----
-
-## Getting the code
-
-```
-git clone https://github.com/Amitk003/HerdSense.git
+```bash
+git clone https://github.com/Amitk003/HerdSense
 cd HerdSense
-```
-
----
-
-## Setting up the web app
-
-The web app is the main application. It runs entirely in the browser.
-
-```
 npm install
-```
-
----
-
-## Running the development server
-
-```
 npm run dev
 ```
 
-This starts the Vite development server. Open the URL shown in the terminal (usually http://localhost:5173) in your browser.
-
----
+The app starts at http://localhost:5173.
 
 ## Building for production
 
-```
+```bash
 npm run build
 ```
 
-This creates a `dist/` folder with the production build. You can serve it with any static file server.
+Output goes to the dist/ folder. You can deploy this folder to any static hosting (Vercel, Netlify, GitHub Pages).
 
----
+## Running tests
 
-## Running the backend (optional)
-
-The backend is only needed for live data aggregation. It is optional.
-
-```
-cd backend
-python -m venv venv
-
-# On Windows:
-venv\Scripts\activate
-
-# On Mac/Linux:
-source venv/bin/activate
-
-pip install -r requirements.txt
-python app.py
+```bash
+npm test
 ```
 
-The server starts at `http://localhost:5000`.
+Tests use Vitest. They test the pipeline (detection, features, fusion) and utilities (clustering).
 
----
-
-## Running the Python dev tools (optional)
-
-The edge/ folder contains Python scripts for model conversion and testing. These are developer tools, not part of the running application.
+## Project structure
 
 ```
-cd edge
-python -m venv venv
-
-# On Windows:
-venv\Scripts\activate
-
-# On Mac/Linux:
-source venv/bin/activate
-
-pip install -r requirements.txt
+src/
+  components/     - React components (HomeScreen, CameraView, AnalysisView, StressMap, NearbyFeed, etc.)
+  hooks/          - Custom hooks (usePeerNetwork)
+  pipeline/       - ML pipeline (detector, tracker, features, fusion, types)
+  utils/          - Utilities (clustering, geohash, storage)
+  data/           - Demo presets
+public/
+  models/         - YOLOv8-Nano ONNX model
+  manifest.json   - PWA manifest
+  sw.js           - Service worker
 ```
-
-### Download and convert the model
-
-```
-python scripts/download_model.py
-```
-
-This downloads YOLOv8-Nano and converts it to ONNX format for browser use.
-
----
-
-## Running with sample data
-
-Place demo videos in the `public/videos/` folder. The app will pick them up as demo presets.
-
----
-
-## Testing
-
-```
-# Web app tests
-npm run test
-
-# Backend tests (if running)
-cd backend
-python -m pytest tests/
-```
-
----
-
-## Common issues
-
-**ONNX Runtime Web fails to load:**
-Make sure you are using a modern browser that supports WebGL. Chrome and Edge work best.
-
-**Model not found:**
-Run `npm run download-model` or place the YOLOv8 ONNX model in `public/models/`.
-
-**App not working on phone:**
-Open the development server URL on your phone (same WiFi network). For production, use the build output with a static server.
-
-**Video not playing:**
-Make sure video files are in a supported format (MP4 with H.264 codec). Place them in `public/videos/`.
