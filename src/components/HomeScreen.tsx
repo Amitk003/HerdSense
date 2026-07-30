@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { DEMO_PRESETS } from '../data/presets'
 import { calcHssi } from '../pipeline/fusion'
 import { saveRecord, loadHistory } from '../utils/storage'
@@ -11,10 +12,14 @@ interface HomeScreenProps {
 }
 
 export default function HomeScreen({ onPresetSelected, onNavigateMap, onNavigateHistory }: HomeScreenProps) {
+  const [loading, setLoading] = useState(false)
   const history = loadHistory()
   const lastScore = history.length > 0 ? history[0].score : null
 
-  const handlePreset = (preset: DemoPreset) => {
+  const handlePreset = async (preset: DemoPreset) => {
+    setLoading(true)
+    await new Promise(r => setTimeout(r, 600))
+
     const history = loadHistory()
 
     const result = calcHssi(
@@ -43,11 +48,18 @@ export default function HomeScreen({ onPresetSelected, onNavigateMap, onNavigate
       animalCount: 15
     })
 
+    setLoading(false)
     onPresetSelected(finalResult)
   }
 
   return (
     <div className="screen home-screen">
+      {loading && (
+        <div className="loading-overlay">
+          <div className="loading-spinner" />
+          <p>Analyzing herd video...</p>
+        </div>
+      )}
       <header className="home-header">
         <h1 className="app-title">HerdSense</h1>
         <p className="app-subtitle">Livestock stress detection</p>
@@ -80,6 +92,9 @@ export default function HomeScreen({ onPresetSelected, onNavigateMap, onNavigate
       </section>
 
       <nav className="home-nav">
+        <button className="nav-btn nav-btn-primary" onClick={() => alert('Camera recording coming soon')}>
+          Record New
+        </button>
         <button className="nav-btn" onClick={onNavigateMap}>
           View Regional Map
         </button>

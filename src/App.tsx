@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import ErrorBoundary from './components/ErrorBoundary'
 import HomeScreen from './components/HomeScreen'
 import AnalysisView from './components/AnalysisView'
 import StressMap from './components/StressMap'
@@ -22,6 +23,7 @@ export default function App() {
   }
 
   return (
+    <ErrorBoundary>
     <div className="app">
       {screen === 'home' && (
         <HomeScreen
@@ -48,5 +50,6 @@ export default function App() {
         />
       )}
     </div>
+    </ErrorBoundary>
   )
 }

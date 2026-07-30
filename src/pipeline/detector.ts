@@ -46,7 +46,7 @@ export class Detector {
       ctx.drawImage(video, 0, 0, 640, 640)
       const imageData = ctx.getImageData(0, 0, 640, 640)
 
-      const inputTensor = this.preprocess(imageData)
+      const inputTensor = await this.preprocess(imageData)
       const results = await this.session.run({ images: inputTensor })
       const boxes = this.parseOutput(results, 640, 640)
 
@@ -59,8 +59,8 @@ export class Detector {
     return frames
   }
 
-  private preprocess(imageData: ImageData): any {
-    const ort = (window as any).ort
+  private async preprocess(imageData: ImageData): Promise<any> {
+    const ort = await import('onnxruntime-web')
     const pixels = new Float32Array(640 * 640 * 3)
     let idx = 0
     for (let i = 0; i < imageData.data.length; i += 4) {
