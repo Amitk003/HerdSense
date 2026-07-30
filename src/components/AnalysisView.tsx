@@ -12,7 +12,7 @@ interface AnalysisViewProps {
 function TrendIcon({ trend }: { trend: string }) {
   if (trend === 'improving') return <span className="trend-arrow down">&#8595;</span>
   if (trend === 'escalating') return <span className="trend-arrow up">&#8593;</span>
-  return <span className="trend-arrow right">&#8594;</span>
+  return <span className="trend-arrow right">&#8212;</span>
 }
 
 function TrendLabel({ trend }: { trend: string }) {

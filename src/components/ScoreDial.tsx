@@ -37,7 +37,7 @@ export default function ScoreDial({ score, size }: ScoreDialProps) {
         style={{ transition: 'stroke-dashoffset 0.6s ease' }}
       />
       <text
-        x={r} y={r - size * 0.06}
+        x={r} y={r + size * 0.04}
         textAnchor="middle"
         fill={num}
         fontSize={size * 0.34}
@@ -47,7 +47,7 @@ export default function ScoreDial({ score, size }: ScoreDialProps) {
         {score}
       </text>
       <text
-        x={r} y={r + size * 0.14}
+        x={r} y={r + size * 0.22}
         textAnchor="middle"
         fill="#a8a29e"
         fontSize={size * 0.065}
