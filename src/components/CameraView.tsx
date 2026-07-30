@@ -185,8 +185,9 @@ export default function CameraView({ onComplete, onBack, startInUpload }: Camera
   }
 
   async function processRecording() {
+    const mimeType = recorderRef.current?.mimeType || 'video/webm'
     stopCamera()
-    const blob = new Blob(chunksRef.current, { type: 'video/webm' })
+    const blob = new Blob(chunksRef.current, { type: mimeType })
     const url = URL.createObjectURL(blob)
     await processVideo(url)
   }
