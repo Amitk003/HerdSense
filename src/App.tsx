@@ -162,6 +162,7 @@ export default function App() {
           <StressMap
             onBack={handleBackHome}
             reports={peer.reports}
+            location={peer.location}
             focusedReportId={focusedReportId}
             onClusterAlert={handleClusterAlert}
           />

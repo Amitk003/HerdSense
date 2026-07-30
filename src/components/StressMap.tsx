@@ -65,110 +65,109 @@ function MapController({ focusedReportId, reports, onClusterAlert }: MapControll
 interface StressMapProps {
   onBack?: () => void
   reports?: StressReport[]
+  location?: { lat: number; lng: number } | null
   focusedReportId?: string | null
   onClusterAlert?: (cluster: AlertCluster) => void
 }
 
-export default function StressMap({ onBack, reports = [], focusedReportId, onClusterAlert }: StressMapProps) {
+export default function StressMap({ onBack, reports = [], location, focusedReportId, onClusterAlert }: StressMapProps) {
   const [tilesLoaded, setTilesLoaded] = useState(false)
 
   const clusters: AlertCluster[] = useMemo(() => findAlertClusters(reports), [reports])
 
-  const center: [number, number] = reports.length > 0
-    ? [reports[0].lat, reports[0].lng]
-    : [0, 20]
+  const center: [number, number] = useMemo(() => {
+    if (focusedReportId) {
+      const rep = reports.find(r => r.id === focusedReportId)
+      if (rep) return [rep.lat, rep.lng]
+    }
+    if (reports.length > 0) return [reports[0].lat, reports[0].lng]
+    if (location) return [location.lat, location.lng]
+    return [1.35, 36.82]
+  }, [focusedReportId, reports, location])
 
   const highStressCount = reports.filter(r => r.score > 60).length
 
   return (
     <div className="screen map-screen">
       <div className="map-body">
-        {reports.length === 0 ? (
-          <div className="empty-state">
-            <svg className="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-              <circle cx="12" cy="10" r="3" />
-            </svg>
-            <span className="empty-state-title">No reports yet</span>
-            <span className="empty-state-sub">Share a scan to see reports on the map</span>
+        <MapContainer center={center} zoom={reports.length > 0 ? 10 : 7} className="map-container" zoomControl={false}>
+          <MapController
+            focusedReportId={focusedReportId ?? null}
+            reports={reports}
+            onClusterAlert={onClusterAlert}
+          />
+          {!tilesLoaded && (
+            <div className="map-tile-overlay">Loading map tiles...</div>
+          )}
+          {reports.length === 0 && (
+            <div className="map-tile-overlay" style={{ background: 'rgba(255, 255, 255, 0.9)', backdropFilter: 'blur(4px)', color: 'var(--text)', padding: '10px 16px', borderRadius: 8 }}>
+              No nearby reports yet. Run a scan and tap Share to add your herd.
+            </div>
+          )}
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            eventHandlers={{ load: () => setTilesLoaded(true) }}
+          />
+          {reports.map(r => (
+            <CircleMarker
+              key={r.id}
+              center={[r.lat, r.lng]}
+              radius={6 + (r.score / 100) * 8}
+              pathOptions={{
+                color: scoreColor(r.score),
+                fillColor: scoreColor(r.score),
+                fillOpacity: scoreOpacity(r.score),
+                weight: 1.5
+              }}
+            >
+              <Tooltip direction="top" offset={[0, -8]}>
+                {r.species} &middot; Score {r.score} &middot; {r.animalCount} animals
+              </Tooltip>
+            </CircleMarker>
+          ))}
+          {clusters.map((c, i) => (
+            <Circle
+              key={i}
+              center={[c.center.lat, c.center.lng]}
+              radius={c.radiusKm * 1000}
+              pathOptions={{
+                color: 'var(--danger)',
+                fillColor: 'var(--danger)',
+                fillOpacity: 0.06,
+                weight: 1.5,
+                dashArray: '6 4'
+              }}
+            />
+          ))}
+        </MapContainer>
+
+        <div className="map-stats-overlay">
+          <div className="map-stat-badge">
+            <div className="num" style={{ color: 'var(--success)' }}>{reports.length}</div>
+            <div className="lbl">Reports</div>
           </div>
-        ) : (
-          <>
-            <MapContainer center={center} zoom={10} className="map-container" zoomControl={false}>
-              <MapController
-                focusedReportId={focusedReportId ?? null}
-                reports={reports}
-                onClusterAlert={onClusterAlert}
-              />
-              {!tilesLoaded && (
-                <div className="map-tile-overlay">Loading map tiles...</div>
-              )}
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                eventHandlers={{ load: () => setTilesLoaded(true) }}
-              />
-              {reports.map(r => (
-                <CircleMarker
-                  key={r.id}
-                  center={[r.lat, r.lng]}
-                  radius={6 + (r.score / 100) * 8}
-                  pathOptions={{
-                    color: scoreColor(r.score),
-                    fillColor: scoreColor(r.score),
-                    fillOpacity: scoreOpacity(r.score),
-                    weight: 1.5
-                  }}
-                >
-                  <Tooltip direction="top" offset={[0, -8]}>
-                    {r.species} &middot; Score {r.score} &middot; {r.animalCount} animals
-                  </Tooltip>
-                </CircleMarker>
-              ))}
-              {clusters.map((c, i) => (
-                <Circle
-                  key={i}
-                  center={[c.center.lat, c.center.lng]}
-                  radius={c.radiusKm * 1000}
-                  pathOptions={{
-                    color: 'var(--danger)',
-                    fillColor: 'var(--danger)',
-                    fillOpacity: 0.06,
-                    weight: 1.5,
-                    dashArray: '6 4'
-                  }}
-                />
-              ))}
-            </MapContainer>
+          <div className="map-stat-badge">
+            <div className="num" style={{ color: highStressCount > 5 ? 'var(--danger)' : 'var(--warning)' }}>{highStressCount}</div>
+            <div className="lbl">High stress</div>
+          </div>
+          <div className="map-stat-badge">
+            <div className="num" style={{ color: clusters.length > 0 ? 'var(--danger)' : 'var(--text-muted)' }}>{clusters.length}</div>
+            <div className="lbl">Alerts</div>
+          </div>
+        </div>
 
-            <div className="map-stats-overlay">
-              <div className="map-stat-badge">
-                <div className="num" style={{ color: 'var(--success)' }}>{reports.length}</div>
-                <div className="lbl">Reports</div>
-              </div>
-              <div className="map-stat-badge">
-                <div className="num" style={{ color: highStressCount > 5 ? 'var(--danger)' : 'var(--warning)' }}>{highStressCount}</div>
-                <div className="lbl">High stress</div>
-              </div>
-              <div className="map-stat-badge">
-                <div className="num" style={{ color: clusters.length > 0 ? 'var(--danger)' : 'var(--text-muted)' }}>{clusters.length}</div>
-                <div className="lbl">Alerts</div>
-              </div>
-            </div>
-
-            <div className="map-legend-overlay">
-              <span className="map-legend-item">
-                <span className="map-legend-dot" style={{ background: 'var(--success)' }} /> Low
-              </span>
-              <span className="map-legend-item">
-                <span className="map-legend-dot" style={{ background: 'var(--warning)' }} /> Mod
-              </span>
-              <span className="map-legend-item">
-                <span className="map-legend-dot" style={{ background: 'var(--danger)' }} /> High
-              </span>
-            </div>
-          </>
-        )}
+        <div className="map-legend-overlay">
+          <span className="map-legend-item">
+            <span className="map-legend-dot" style={{ background: 'var(--success)' }} /> Low
+          </span>
+          <span className="map-legend-item">
+            <span className="map-legend-dot" style={{ background: 'var(--warning)' }} /> Mod
+          </span>
+          <span className="map-legend-item">
+            <span className="map-legend-dot" style={{ background: 'var(--danger)' }} /> High
+          </span>
+        </div>
       </div>
 
       {reports.length > 0 && clusters.length > 0 && (
