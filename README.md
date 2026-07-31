@@ -1,36 +1,46 @@
 # HerdSense
 
-HerdSense is an offline-first, browser-based edge AI platform that detects livestock stress from standard phone video. Object detection and behavioral analysis run directly on the device, so no cloud servers, satellite feeds, or hardware collars are required.
+**Your herd's stress, scored in seconds. Right on your phone. No cloud. No collars. No cost.**
+
+HerdSense is an offline-first, browser-based edge AI platform that turns any phone into a livestock stress scanner. Point your camera at the herd, record 20 seconds of video, and get a clear 0 to 100 stress score with a plain-language recommendation. Object detection and behavioral analysis run entirely on the device, so there is no cloud, no satellite feed, and no hardware to buy.
+
+**Try it live: [https://herdsense0.vercel.app](https://herdsense0.vercel.app)**
 
 ---
 
 ## Why HerdSense
 
-Livestock show stress days before it is visible from space. They bunch together, move erratically, and change posture. HerdSense measures these signals with a YOLOv8 model running in the browser and returns a clear 0 to 100 stress score in seconds.
+Livestock show stress **days before it is visible from space**. They bunch tighter, move erratically, and drop their heads. That is the warning window where a farmer can still act.
+
+HerdSense measures those signals with a YOLOv8 model running in the browser and returns an answer in seconds:
+
+| Score | Status | What you should do |
+|---|---|---|
+| 0 to 35 | Green | Herd looks healthy. No change needed. |
+| 36 to 65 | Yellow | Some stress signs. Keep watching. |
+| 66 to 100 | Red | High stress. Relocate the herd or release stored feed now. |
 
 ---
 
 ## Best Features
 
 ### 1. On-Device AI, Zero Hardware
-Point your phone camera at the herd and record 20 seconds of video. YOLOv8-Nano inference runs inside the browser with ONNX Runtime Web using WebGL, with a WebAssembly fallback for older devices. The raw video never leaves the phone.
+Point your phone at the herd and record 20 seconds. YOLOv8-Nano inference runs inside the browser with ONNX Runtime Web (WebGL accelerated, WebAssembly fallback). **The raw video never leaves your phone.**
 
 ### 2. Multi-Signal Behavioral Scoring
 Three visual signals are fused into one stress score:
-- **Clustering (40%)**: Inter-Animal Spatial Index, which measures how tightly the herd is bunched.
+- **Clustering (40%)**: Inter-Animal Spatial Index, how tightly the herd is bunched.
 - **Motion (35%)**: Speed variance and direction change frequency. Erratic movement raises the score.
 - **Posture (25%)**: Bounding box aspect ratio variance over time, which captures head droop.
 
-The score maps to a clear recommendation: healthy, watch, or act now.
-
 ### 3. Serverless P2P Mesh Network
-Reports sync directly between nearby devices over WebRTC DataChannels, grouped by geohash (roughly 150km across). No backend, no database, no per-user accounts. When a scan finishes, the report is validated and auto-shared with peers in the same region, and cluster alerts fire when 3 or more high-stress herds appear within 15km.
+Reports sync directly between nearby devices over WebRTC DataChannels, grouped by geohash (roughly 150km across). No backend, no database, no accounts. Cluster alerts fire automatically when 3 or more high-stress herds appear within 15km.
 
 ### 4. Offline-Ready PWA
-Installable as a Progressive Web App. The service worker pre-caches the app shell, the ONNX model, and the WASM runtimes on first load, so scanning and history work with no connection. Local scan history persists in the browser.
+Installable as a Progressive Web App. The service worker pre-caches the app shell, the ONNX model, and the WASM runtimes, so scanning and history work with no connection at all.
 
 ### 5. Accessible and Mobile-First UI
-Full keyboard navigation for cards and buttons, high-contrast light theme, live camera preview, upload fallback for devices without a camera, and a collapsible nearby feed with distance and recency.
+Full keyboard navigation, high-contrast light theme, live camera preview, upload fallback for devices without a camera, and a nearby feed with distance and recency.
 
 ---
 
@@ -46,7 +56,7 @@ Mobile camera / video file
 [ YOLOv8-Nano via ONNX Runtime Web ]
             |
             v
-[ Class-aware NMS + IoU tracker ]
+[ NMS + IoU tracker ]
             |
             v
 [ Feature extraction: clustering, motion, posture ]
