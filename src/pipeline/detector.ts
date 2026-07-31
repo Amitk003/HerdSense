@@ -25,11 +25,9 @@ function applyNMS(boxes: BoundingBox[], iouThreshold = 0.45): BoundingBox[] {
   for (const box of boxes) {
     let keep = true
     for (const sel of selected) {
-      if (box.classId === sel.classId) {
-        if (calculateIoU(box, sel) > iouThreshold) {
-          keep = false
-          break
-        }
+      if (calculateIoU(box, sel) > iouThreshold) {
+        keep = false
+        break
       }
     }
     if (keep) {
@@ -48,16 +46,9 @@ export class Detector {
     try {
       const ort = await import('onnxruntime-web')
       ort.env.wasm.wasmPaths = '/wasm/'
-      ort.env.wasm.numThreads = 1
-      try {
-        this.session = await ort.InferenceSession.create(modelPath, {
-          executionProviders: ['webgl', 'wasm']
-        })
-      } catch {
-        this.session = await ort.InferenceSession.create(modelPath, {
-          executionProviders: ['wasm']
-        })
-      }
+      this.session = await ort.InferenceSession.create(modelPath, {
+        executionProviders: ['webgl', 'wasm']
+      })
       this.modelLoaded = true
       this.modelError = ''
     } catch (err) {
@@ -278,7 +269,7 @@ export class Detector {
     }
 
     const nmsBoxes = applyNMS(boxes, 0.45)
-    console.log('[HerdSense] parseOutput found', nmsBoxes.length, 'raw detections after NMS')
+    console.log('[HerdSense] parseOutput found', nmsBoxes.length, 'animal detections after NMS')
     return nmsBoxes
   }
 
@@ -299,7 +290,7 @@ export class Detector {
       timeout = setTimeout(() => {
         video.removeEventListener('seeked', handler)
         resolve()
-      }, 100)
+      }, 300)
     })
   }
 }

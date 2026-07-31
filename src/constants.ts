@@ -8,7 +8,7 @@ export const CLUSTER_MIN_HERDS = 3
 export const CLUSTER_SCORE_THRESHOLD = 60
 
 export const CONFIDENCE_THRESHOLD = 0.25
-export const FRAME_SAMPLE_RATE = 15
+export const FRAME_SAMPLE_RATE = 3
 
 export const MAX_CACHED_REPORTS = 50
 export const MAX_HISTORY_RECORDS = 50
@@ -36,5 +36,5 @@ export function speciesFromClassIds(classIds: number[]): string {
   for (const [name, count] of Object.entries(counts)) {
     if (count > bestCount) { best = name; bestCount = count }
   }
-  return bestCount > 0 ? best : 'livestock'
+  return bestCount > 0 ? best : 'cattle'
 }

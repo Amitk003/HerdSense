@@ -1,5 +1,6 @@
 import type { Centroid, FrameFeatures, SpeedStats, DetectionFrame } from './types'
 import { Tracker } from './tracker'
+import { FRAME_SAMPLE_RATE } from '../constants'
 
 export class FeatureExtractor {
   private tracker = new Tracker()
@@ -9,9 +10,9 @@ export class FeatureExtractor {
   private totalDirectionChanges = 0
 
   extract(
-    video: HTMLVideoElement,
+    _video: HTMLVideoElement,
     frames: DetectionFrame[],
-    totalFrames: number
+    _totalFrames: number
   ): FrameFeatures[] {
     this.tracker.reset()
     this.prevCentroids.clear()
@@ -72,7 +73,8 @@ export class FeatureExtractor {
 
       const dx = curr.x - prev.x
       const dy = curr.y - prev.y
-      const speed = Math.sqrt(dx * dx + dy * dy)
+      const rawDist = Math.sqrt(dx * dx + dy * dy)
+      const speed = rawDist * (3 / FRAME_SAMPLE_RATE)
       const angle = Math.atan2(dy, dx)
 
       speeds.push(speed)
