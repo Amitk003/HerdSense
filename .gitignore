@@ -30,3 +30,4 @@ __MACOSX/
 
 # Memory folder - internal project knowledge, never pushed
 memory/
+.vercel

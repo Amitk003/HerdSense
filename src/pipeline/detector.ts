@@ -25,11 +25,9 @@ function applyNMS(boxes: BoundingBox[], iouThreshold = 0.45): BoundingBox[] {
   for (const box of boxes) {
     let keep = true
     for (const sel of selected) {
-      if (box.classId === sel.classId) {
-        if (calculateIoU(box, sel) > iouThreshold) {
-          keep = false
-          break
-        }
+      if (calculateIoU(box, sel) > iouThreshold) {
+        keep = false
+        break
       }
     }
     if (keep) {
@@ -43,6 +41,8 @@ export class Detector {
   private session: any = null
   private modelLoaded = false
   private modelError = ''
+  private modelPath = ''
+  private usingWebGL = false
 
   async loadModel(modelPath: string): Promise<void> {
     try {
@@ -51,14 +51,17 @@ export class Detector {
         ort.env.wasm.wasmPaths = '/wasm/'
       }
       ort.env.wasm.numThreads = 1
+      this.modelPath = modelPath
       try {
         this.session = await ort.InferenceSession.create(modelPath, {
           executionProviders: ['webgl', 'wasm']
         })
+        this.usingWebGL = true
       } catch {
         this.session = await ort.InferenceSession.create(modelPath, {
           executionProviders: ['wasm']
         })
+        this.usingWebGL = false
       }
       this.modelLoaded = true
       this.modelError = ''
@@ -66,6 +69,30 @@ export class Detector {
       this.modelError = err instanceof Error ? err.message : String(err)
       throw new Error(`Model failed to load: ${this.modelError}`)
     }
+  }
+
+  private async recreateSessionWithWasm(): Promise<void> {
+    const ort = await import('onnxruntime-web')
+    try {
+      this.session?.release?.()
+    } catch {
+      // ignore release errors
+    }
+    this.session = await ort.InferenceSession.create(this.modelPath, {
+      executionProviders: ['wasm']
+    })
+    this.usingWebGL = false
+  }
+
+  private outputIsInvalid(results: any): boolean {
+    const keys = Object.keys(results)
+    if (keys.length === 0) return true
+    const data: Float32Array | undefined = results[keys[0]]?.data
+    if (!data || data.length === 0) return true
+    for (let i = 0; i < data.length; i++) {
+      if (!Number.isFinite(data[i])) return true
+    }
+    return false
   }
 
   get isLoaded(): boolean {
@@ -96,7 +123,17 @@ export class Detector {
       const imageData = ctx.getImageData(0, 0, 640, 640)
 
       const inputTensor = await this.preprocess(imageData)
-      const results = await this.session.run({ images: inputTensor })
+      let results = await this.session.run({ images: inputTensor })
+
+      if (i === 0 && this.usingWebGL) {
+        const firstBoxes = this.parseOutput(results, 640, 640)
+        if (this.outputIsInvalid(results) || firstBoxes.length === 0) {
+          console.warn('[HerdSense] WebGL EP produced invalid output, falling back to wasm EP')
+          await this.recreateSessionWithWasm()
+          results = await this.session.run({ images: inputTensor })
+        }
+      }
+
       const boxes = this.parseOutput(results, 640, 640)
 
       frames.push({
@@ -301,7 +338,7 @@ export class Detector {
       timeout = setTimeout(() => {
         video.removeEventListener('seeked', handler)
         resolve()
-      }, 100)
+      }, 300)
     })
   }
 }
