@@ -47,7 +47,9 @@ export class Detector {
   async loadModel(modelPath: string): Promise<void> {
     try {
       const ort = await import('onnxruntime-web')
-      ort.env.wasm.wasmPaths = '/wasm/'
+      if (import.meta.env.DEV) {
+        ort.env.wasm.wasmPaths = '/wasm/'
+      }
       ort.env.wasm.numThreads = 1
       try {
         this.session = await ort.InferenceSession.create(modelPath, {

@@ -1,13 +1,8 @@
-const CACHE = 'herdsense-v3'
+const CACHE = 'herdsense-v4'
 const STATIC_ASSETS = [
   '/',
   '/index.html',
-  '/manifest.json',
-  '/models/yolov8n.onnx',
-  '/wasm/ort-wasm-simd-threaded.wasm',
-  '/wasm/ort-wasm-simd-threaded.jsep.wasm',
-  '/wasm/ort-wasm-simd-threaded.jspi.wasm',
-  '/wasm/ort-wasm-simd-threaded.asyncify.wasm'
+  '/manifest.json'
 ]
 
 self.addEventListener('install', (event) => {
