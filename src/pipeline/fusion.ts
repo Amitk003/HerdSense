@@ -17,11 +17,9 @@ export function calcHssi(
   const postureScore = calcPostureScore(features)
   const audioScore = Math.max(0, Math.min(1, audioDistress))
 
-  const rawScore =
-    CLUSTER_WEIGHT * clusteringScore +
-    MOTION_WEIGHT * motionScore +
-    POSTURE_WEIGHT * postureScore +
-    AUDIO_WEIGHT * audioScore
+  const rawScore = audioDistress > 0
+    ? (CLUSTER_WEIGHT * clusteringScore + MOTION_WEIGHT * motionScore + POSTURE_WEIGHT * postureScore + AUDIO_WEIGHT * audioScore)
+    : (0.42 * clusteringScore + 0.33 * motionScore + 0.25 * postureScore)
 
   const score = Math.round(Math.max(0, Math.min(100, rawScore * 100)))
   const trend = calcTrend(score, history)

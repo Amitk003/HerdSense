@@ -1,5 +1,6 @@
 import type { Centroid, FrameFeatures, SpeedStats, DetectionFrame } from './types'
 import { Tracker } from './tracker'
+import { FRAME_SAMPLE_RATE } from '../constants'
 
 export class FeatureExtractor {
   private tracker = new Tracker()
@@ -72,7 +73,8 @@ export class FeatureExtractor {
 
       const dx = curr.x - prev.x
       const dy = curr.y - prev.y
-      const speed = Math.sqrt(dx * dx + dy * dy)
+      const rawDist = Math.sqrt(dx * dx + dy * dy)
+      const speed = rawDist * (3 / FRAME_SAMPLE_RATE)
       const angle = Math.atan2(dy, dx)
 
       speeds.push(speed)
