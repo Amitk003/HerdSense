@@ -4,7 +4,6 @@ import { speciesFromClassIds } from '../constants'
 const CLUSTER_WEIGHT = 0.40
 const MOTION_WEIGHT = 0.35
 const POSTURE_WEIGHT = 0.25
-const AUDIO_WEIGHT = 0.00
 
 export function calcHssi(
   features: FrameFeatures[],
