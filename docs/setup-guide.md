@@ -31,7 +31,7 @@ Output goes to the dist/ folder. You can deploy this folder to any static hostin
 npm test
 ```
 
-Tests use Vitest. They test the pipeline (detection, features, fusion) and utilities (clustering).
+Tests use Vitest. They test the pipeline (detection, features, fusion, tracking) and utilities (clustering, storage).
 
 ## Project structure
 
@@ -41,9 +41,9 @@ src/
   hooks/          - Custom hooks (usePeerNetwork)
   pipeline/       - ML pipeline (detector, tracker, features, fusion, types)
   utils/          - Utilities (clustering, geohash, storage)
-  data/           - Demo presets
 public/
   models/         - YOLOv8-Nano ONNX model
+  wasm/           - ONNX Runtime WebAssembly runtimes
   manifest.json   - PWA manifest
   sw.js           - Service worker
 ```

@@ -1,5 +1,5 @@
 import type { BoundingBox, DetectionFrame } from './types'
-import { CONFIDENCE_THRESHOLD, FRAME_SAMPLE_RATE, FPS } from '../constants'
+import { CONFIDENCE_THRESHOLD, FRAME_SAMPLE_RATE, FPS, SPECIES_MAP } from '../constants'
 
 function calculateIoU(boxA: BoundingBox, boxB: BoundingBox): number {
   const x1 = Math.max(boxA.x, boxB.x)
@@ -132,7 +132,7 @@ export class Detector {
     const data: Float32Array = output.data
     const dims: number[] = output.dims || []
     const boxes: BoundingBox[] = []
-    const validClassIds = new Set([16, 17, 18, 19, 20, 21, 22, 23, 24])
+    const validClassIds = new Set(Object.keys(SPECIES_MAP).map(Number))
 
     console.log('[HerdSense] Model output dims:', dims, 'data length:', data.length)
 

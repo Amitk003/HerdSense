@@ -15,7 +15,7 @@ HerdSense fully supports keyboard navigation:
 1. Tap "Record" on the home screen.
 2. Point your phone camera at your herd.
 3. Tap "Start Recording (20s)".
-4. Analysis runs on your phone in 2-3 seconds.
+4. Analysis runs on your phone. Processing a 20-second clip takes longer on older devices.
 
 ### 2. Upload Video File
 1. Tap "Upload" on the home screen.
@@ -37,7 +37,7 @@ Score breakdown:
 
 ## Automatic Sharing & Maps
 
-- **Auto-Shared**: When a scan finishes, an anonymous report is shared over WebRTC with nearby farmers within your 100km geohash.
+- **Auto-Shared**: When a scan finishes, a report with the score, species, animal count, and location is shared over WebRTC with nearby farmers in your geohash region (roughly 150km across).
 - **Interactive Map**: Tap "Map" to see nearby herd reports and active cluster alerts.
 - **Scan History**: Tap "History" to review your previous scans saved on your device.
 

@@ -40,6 +40,6 @@ Your raw video stays strictly on your phone or computer. Video files are never u
   "timestamp": "2026-07-30T14:00:00Z"
 }
 ```
-- The report is validated and sent over WebRTC DataChannel to nearby room peers within the same 100km geohash.
+- The report is validated and sent over WebRTC DataChannel to nearby room peers within the same geohash region (roughly 150km across).
 - Incoming network reports are validated for correct data types before rendering on the interactive map.
 

@@ -14,15 +14,9 @@ export const MAX_CACHED_REPORTS = 50
 export const MAX_HISTORY_RECORDS = 50
 
 export const SPECIES_MAP: Record<number, string> = {
-  16: 'cattle',
   17: 'horse',
   18: 'sheep',
-  19: 'cattle',
-  20: 'cattle',
-  21: 'goat',
-  22: 'horse',
-  23: 'camel',
-  24: 'donkey'
+  19: 'cattle'
 }
 
 export function speciesFromClassIds(classIds: number[]): string {

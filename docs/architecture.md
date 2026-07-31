@@ -6,11 +6,11 @@ HerdSense has no backend server. Everything runs in the browser.
 
 ### 1. Web App (Vite + React + TypeScript)
 
-The user interface. Runs as a PWA on any modern browser. Works on phones and desktops. Has four screens: Home, Analysis, Map, History.
+The user interface. Runs as a PWA on any modern browser. Works on phones and desktops. Has six screens: Home, Camera, Upload, Analysis, Map, History. Screens are driven by app state, not URL routes.
 
 ### 2. ML Pipeline (ONNX Runtime Web)
 
-All machine learning runs in the browser. YOLOv8-Nano detects animals in video frames. ByteTrack tracks them across frames. FeatureExtractor measures clustering, motion, and posture. Fusion engine combines these into a stress score.
+All machine learning runs in the browser. YOLOv8-Nano detects animals in video frames. An IoU tracker keeps consistent IDs across frames. FeatureExtractor measures clustering, motion, and posture. Fusion engine combines these into a stress score.
 
 ### 3. P2P Network (PeerJS via WebRTC)
 
@@ -27,7 +27,7 @@ Shows stress reports from nearby users on an OpenStreetMap background. Clusters 
 ```
 Camera/video -> Detector.detectFrames() -> FeatureExtractor.extract()
   -> calcHssi() -> score displayed in AnalysisView
-  -> optional Share -> usePeerNetwork.broadcast()
+  -> automatic broadcast via usePeerNetwork.broadcast()
   -> WebRTC DataChannel -> nearby peers receive report
   -> StressMap re-renders with new marker
   -> findAlertClusters() checks for alert zones
@@ -38,5 +38,5 @@ Camera/video -> Detector.detectFrames() -> FeatureExtractor.extract()
 - No user accounts or authentication
 - No data stored on any server
 - Everything runs on the device
-- Sharing is always opt-in
-- Location data is coarse (156km geohash)
+- Reports are auto-shared with devices in the same geohash room
+- Devices group into rooms by geohash (roughly 156km x 125km)

@@ -4,9 +4,9 @@
 
 ONNX Runtime Web supports WebGL and WebGPU execution providers. This means ML inference can use the phone's GPU, which is much faster than CPU-only TensorFlow.js. YOLOv8 exports to ONNX natively, so no conversion step is needed.
 
-## Why ByteTrack instead of DeepSORT?
+## Why a simple IoU tracker instead of ByteTrack or DeepSORT?
 
-ByteTrack is simpler (about 100 lines of code) and does not need a separate appearance model. It only uses bounding box overlap (IoU) to track animals across frames. For livestock detection, animals look similar, so appearance-based tracking adds no value.
+The tracker is a greedy IoU matcher (about 90 lines) rather than ByteTrack or DeepSORT. It matches each new box to the existing track with the highest overlap and reuses that track's ID. It needs no appearance model or motion prediction. For livestock, animals look similar, so appearance-based tracking adds little value, and the short 20-second scan window keeps tracking simple and reliable.
 
 ## Why centroid displacement instead of optical flow?
 
@@ -32,9 +32,9 @@ PeerJS wraps the WebRTC signaling process in a simple API. Without it, we would 
 
 A backend would store user data, which creates privacy risks and operational costs. The P2P approach means no data is ever stored on a server. The app works fully offline when alone and better when connected. Zero hosting cost.
 
-## Why geohash instead of exact GPS?
+## Why geohash for grouping peers?
 
-Geohash (3 characters = 156km box) provides coarse location without storing exact coordinates. This protects privacy while still enabling proximity-based sharing. The box is large enough to find nearby peers but too large to identify an exact herd location.
+Geohash (3 characters, roughly 156km x 125km) groups nearby devices into rooms so reports reach only relevant neighbors. It avoids the need for a server to discover who is nearby. The geohash sets the sharing boundary, but reports themselves carry the device's exact GPS coordinates, so it is not a location obfuscation layer. Keeping exact coordinates in the report lets the map and distance calculations stay accurate.
 
 ## Why localStorage instead of IndexedDB or SQLite?
 
